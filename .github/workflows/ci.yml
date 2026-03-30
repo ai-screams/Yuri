@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   secret-scan:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
@@ -20,17 +20,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install Gitleaks
+        run: brew install gitleaks
+
       - name: Run Gitleaks
         id: gitleaks
-        uses: gitleaks/gitleaks-action@v2
         continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          config-path: .gitleaks.toml
-          report-format: sarif
-          report-path: gitleaks-report.sarif
-          fail: true
+        run: |
+          gitleaks git \
+            --config ./.gitleaks.toml \
+            --report-format sarif \
+            --report-path gitleaks-report.sarif
 
       - name: Upload Gitleaks SARIF
         if: always() && hashFiles('gitleaks-report.sarif') != ''

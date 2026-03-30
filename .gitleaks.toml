@@ -1,0 +1,4 @@
+title = "Yuri Gitleaks Configuration"
+
+[extend]
+useDefault = true

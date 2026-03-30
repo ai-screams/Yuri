@@ -1,0 +1,10 @@
+--swiftversion 5.0
+--indent 4
+--linebreaks lf
+--maxwidth 120
+--trimwhitespace always
+--commas inline
+--semicolons never
+--stripunusedargs closure-only
+--self remove
+--header ignore

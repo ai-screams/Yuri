@@ -1,0 +1,24 @@
+#!/bin/zsh
+
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+cd "$ROOT_DIR"
+
+if ! command -v swiftformat >/dev/null 2>&1; then
+    echo "error: SwiftFormat is not installed." >&2
+    echo "hint: brew install swiftformat" >&2
+    exit 1
+fi
+
+if ! command -v swiftlint >/dev/null 2>&1; then
+    echo "error: SwiftLint is not installed." >&2
+    echo "hint: brew install swiftlint" >&2
+    exit 1
+fi
+
+echo "Running SwiftFormat --lint..."
+swiftformat "$ROOT_DIR/Yuri" --config "$ROOT_DIR/.swiftformat" --lint
+
+echo "Running SwiftLint..."
+swiftlint lint --strict --no-cache --config "$ROOT_DIR/.swiftlint.yml"

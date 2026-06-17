@@ -12,17 +12,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem?
     private var settingsWindowController: NSWindowController?
     private let permissionStatusMenuItem = NSMenuItem()
+    private let frontmostAppTracker = FrontmostAppTracker()
     private let openAccessibilitySettingsMenuItem = NSMenuItem(
         title: "Open Accessibility Settings…",
         action: #selector(openAccessibilitySettings(_:)),
         keyEquivalent: ""
     )
+    #if DEBUG
+        private let debugResolutionMenuItem = NSMenuItem()
+    #endif
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         configureActivationPolicy()
         configureStatusItem()
         refreshPermissionState()
         debugShowSettingsOnLaunchIfNeeded()
+        #if DEBUG
+            configureDebugWindowProbe()
+        #endif
 
         NotificationCenter.default.addObserver(
             self,
@@ -43,6 +50,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func menuWillOpen(_ menu: NSMenu) {
         refreshPermissionState()
+        #if DEBUG
+            updateDebugResolutionMenuItem()
+        #endif
     }
 
     deinit {
@@ -103,6 +113,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(openAccessibilitySettingsMenuItem)
 
         menu.addItem(.separator())
+
+        #if DEBUG
+            debugResolutionMenuItem.isEnabled = false
+            debugResolutionMenuItem.title = "Focused window: open menu to check"
+            menu.addItem(debugResolutionMenuItem)
+
+            let identifyItem = NSMenuItem(
+                title: "Identify Focused Window (Debug)",
+                action: #selector(identifyFocusedWindowDebug(_:)),
+                keyEquivalent: ""
+            )
+            identifyItem.target = self
+            menu.addItem(identifyItem)
+            menu.addItem(.separator())
+        #endif
 
         let settingsItem = NSMenuItem(
             title: "Open Settings…",
@@ -167,3 +192,40 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         #endif
     }
 }
+
+#if DEBUG
+    extension AppDelegate {
+        private func configureDebugWindowProbe() {
+            frontmostAppTracker.onChange = { [weak self] _ in
+                guard let self else { return }
+                NSLog("[Yuri P3] activate -> %@", currentResolutionText())
+            }
+        }
+
+        @objc private func identifyFocusedWindowDebug(_ sender: Any?) {
+            let text = currentResolutionText()
+            NSLog("[Yuri P3] menu -> %@", text)
+
+            let alert = NSAlert()
+            alert.messageText = "Focused Window (Debug)"
+            alert.informativeText = text
+            alert.runModal()
+        }
+
+        private func updateDebugResolutionMenuItem() {
+            debugResolutionMenuItem.title = "Focused: \(currentResolutionText())"
+        }
+
+        private func currentResolutionText() -> String {
+            let appName = frontmostAppTracker.lastFocusedApp?.localizedName ?? "—"
+            switch FocusedWindowResolver.resolveFrontmostFocusedWindow(tracker: frontmostAppTracker) {
+            case let .success(window):
+                let width = Int(window.frame.size.width)
+                let height = Int(window.frame.size.height)
+                return "\(appName) → OK \(width)×\(height) (\(window.subrole))"
+            case let .failure(error):
+                return "\(appName) → \(error.userFacingMessage)"
+            }
+        }
+    }
+#endif

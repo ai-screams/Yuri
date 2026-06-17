@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem?
     private var settingsWindowController: NSWindowController?
     private let permissionStatusMenuItem = NSMenuItem()
+    private let frontmostAppTracker = FrontmostAppTracker()
     private let openAccessibilitySettingsMenuItem = NSMenuItem(
         title: "Open Accessibility Settings…",
         action: #selector(openAccessibilitySettings(_:)),
@@ -23,6 +24,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         configureStatusItem()
         refreshPermissionState()
         debugShowSettingsOnLaunchIfNeeded()
+        #if DEBUG
+            configureDebugWindowProbe()
+        #endif
 
         NotificationCenter.default.addObserver(
             self,
@@ -104,6 +108,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         menu.addItem(.separator())
 
+        #if DEBUG
+            let identifyItem = NSMenuItem(
+                title: "Identify Focused Window (Debug)",
+                action: #selector(identifyFocusedWindowDebug(_:)),
+                keyEquivalent: ""
+            )
+            identifyItem.target = self
+            menu.addItem(identifyItem)
+            menu.addItem(.separator())
+        #endif
+
         let settingsItem = NSMenuItem(
             title: "Open Settings…",
             action: #selector(openSettings(_:)),
@@ -167,3 +182,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         #endif
     }
 }
+
+#if DEBUG
+    extension AppDelegate {
+        private func configureDebugWindowProbe() {
+            frontmostAppTracker.onChange = { [weak self] app in
+                self?.logFocusedWindowResolution(source: app.localizedName ?? "unknown")
+            }
+        }
+
+        @objc private func identifyFocusedWindowDebug(_ sender: Any?) {
+            logFocusedWindowResolution(source: "menu")
+        }
+
+        private func logFocusedWindowResolution(source: String) {
+            let result = FocusedWindowResolver.resolveFrontmostFocusedWindow(tracker: frontmostAppTracker)
+            switch result {
+            case let .success(window):
+                NSLog(
+                    "[Yuri P3] %@ -> OK subrole=%@ frame=%@",
+                    source,
+                    window.subrole,
+                    NSStringFromRect(window.frame.rect)
+                )
+            case let .failure(error):
+                NSLog("[Yuri P3] %@ -> FAIL %@", source, error.userFacingMessage)
+            }
+        }
+    }
+#endif

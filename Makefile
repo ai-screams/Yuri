@@ -7,6 +7,9 @@ format:
 build:
 	./scripts/build.sh
 
+test:
+	./scripts/test.sh
+
 secrets:
 	./scripts/secret-scan.sh
 

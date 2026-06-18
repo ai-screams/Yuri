@@ -9,6 +9,7 @@ import Cocoa
 import os
 
 @main
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let frontmostAppTracker = FrontmostAppTracker()
     private let windowUndoStore = WindowUndoStore()

@@ -1,5 +1,6 @@
 import Cocoa
 
+@MainActor
 final class FrontmostAppTracker {
     private(set) var lastFocusedApp: NSRunningApplication?
     var onChange: ((NSRunningApplication) -> Void)?

@@ -1,5 +1,6 @@
 import Cocoa
 
+@MainActor
 final class SettingsWindowController {
     private var windowController: NSWindowController?
 

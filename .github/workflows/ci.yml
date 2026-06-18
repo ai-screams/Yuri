@@ -69,3 +69,6 @@ jobs:
             -destination 'platform=macOS' \
             CODE_SIGNING_ALLOWED=NO \
             build
+
+      - name: Command-engine tests
+        run: ./scripts/test.sh

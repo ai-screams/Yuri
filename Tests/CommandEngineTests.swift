@@ -1,0 +1,123 @@
+// Yuri 명령 엔진(순수 로직) 회귀 테스트.
+// Xcode 테스트 타깃 대신 swiftc로 컴파일/실행한다(scripts/test.sh, `make test`, CI).
+// 대상: FrameCalculator(기하 계산) + WindowCommand(명령 모델). AppKit/AX 비의존 순수 로직만.
+
+import CoreGraphics
+import Foundation
+
+@main
+enum CommandEngineTests {
+    static let workArea = CGRect(x: 0, y: 25, width: 1920, height: 1055)
+    static var checks = 0
+    static var failures = 0
+
+    static func main() {
+        testAbsolutePlacements()
+        testAxisIndependentComposition()
+        testMoves()
+        testRelativeHalves()
+        testCommandModel()
+
+        if failures == 0 {
+            print("PASS — all \(checks) checks")
+        } else {
+            print("FAIL — \(failures)/\(checks) checks failed")
+            exit(1)
+        }
+    }
+
+    // MARK: - helpers
+
+    private static func approx(_ lhs: CGFloat, _ rhs: CGFloat) -> Bool {
+        abs(lhs - rhs) < 0.001
+    }
+
+    private static func expect(_ label: String, _ got: CGRect, _ want: CGRect) {
+        checks += 1
+        let same = approx(got.minX, want.minX) && approx(got.minY, want.minY)
+            && approx(got.width, want.width) && approx(got.height, want.height)
+        if !same {
+            failures += 1
+            print("FAIL \(label): got \(got) want \(want)")
+        }
+    }
+
+    private static func expectName(_ label: String, _ got: String, _ want: String) {
+        checks += 1
+        if got != want {
+            failures += 1
+            print("FAIL \(label): got \"\(got)\" want \"\(want)\"")
+        }
+    }
+
+    private static func target(_ command: WindowCommand, _ current: CGRect) -> CGRect {
+        FrameCalculator.targetFrame(for: command, current: current, workArea: workArea)
+    }
+
+    private static func absolute(_ axis: Axis, _ fraction: Fraction, _ slot: Slot) -> WindowCommand {
+        .absolute(AbsolutePlacement(axis: axis, fraction: fraction, slot: slot))
+    }
+
+    // MARK: - tests
+
+    private static func testAbsolutePlacements() {
+        let base = CGRect(x: 300, y: 200, width: 700, height: 500)
+        let twoThird: CGFloat = 2.0 / 3.0
+        expect("maximize", target(.maximize, base), workArea)
+        expect("right 1/2", target(absolute(.horizontal, .half, .last), base),
+               CGRect(x: 960, y: 200, width: 960, height: 500))
+        expect("left 1/3", target(absolute(.horizontal, .third, .first), base),
+               CGRect(x: 0, y: 200, width: 640, height: 500))
+        expect("center 1/3", target(absolute(.horizontal, .third, .center), base),
+               CGRect(x: 640, y: 200, width: 640, height: 500))
+        expect("right 1/3", target(absolute(.horizontal, .third, .last), base),
+               CGRect(x: 1280, y: 200, width: 640, height: 500))
+        expect("left 2/3", target(absolute(.horizontal, .twoThird, .first), base),
+               CGRect(x: 0, y: 200, width: 1280, height: 500))
+        expect("bottom 1/2 keeps x/width", target(absolute(.vertical, .half, .last), base),
+               CGRect(x: 300, y: 552.5, width: 700, height: 527.5))
+        expect("top 2/3", target(absolute(.vertical, .twoThird, .first), base),
+               CGRect(x: 300, y: 25, width: 700, height: 1055 * twoThird))
+    }
+
+    private static func testAxisIndependentComposition() {
+        var frame = target(.maximize, CGRect(x: 10, y: 10, width: 100, height: 100))
+        frame = target(absolute(.horizontal, .half, .first), frame)
+        frame = target(absolute(.vertical, .half, .first), frame)
+        expect("maximize -> left 1/2 -> top 1/2 = top-left quarter", frame,
+               CGRect(x: 0, y: 25, width: 960, height: 527.5))
+    }
+
+    private static func testMoves() {
+        expect("move right clamps to work-area edge", target(.move(.right), CGRect(x: 1700, y: 25, width: 400, height: 300)),
+               CGRect(x: 1520, y: 25, width: 400, height: 300))
+        expect("move left clamps to work-area edge", target(.move(.left), CGRect(x: 100, y: 25, width: 400, height: 300)),
+               CGRect(x: 0, y: 25, width: 400, height: 300))
+        expect("move center", target(.move(.center), CGRect(x: 0, y: 25, width: 400, height: 300)),
+               CGRect(x: 760, y: 402.5, width: 400, height: 300))
+        expect("oversize window pins to top-left, not negative", target(.move(.right), CGRect(x: 0, y: 25, width: 2000, height: 300)),
+               CGRect(x: 0, y: 25, width: 2000, height: 300))
+    }
+
+    private static func testRelativeHalves() {
+        var frame = CGRect(x: 0, y: 25, width: 960, height: 1055)
+        frame = target(.relativeHalf(.left), frame)
+        expect("relative left halves width, keeps left edge", frame, CGRect(x: 0, y: 25, width: 480, height: 1055))
+        frame = target(.relativeHalf(.left), frame)
+        expect("relative left is cumulative", frame, CGRect(x: 0, y: 25, width: 240, height: 1055))
+        expect("relative right keeps right edge", target(.relativeHalf(.right), CGRect(x: 0, y: 25, width: 800, height: 1055)),
+               CGRect(x: 400, y: 25, width: 400, height: 1055))
+        expect("relative bottom keeps bottom edge", target(.relativeHalf(.bottom), CGRect(x: 0, y: 25, width: 800, height: 600)),
+               CGRect(x: 0, y: 325, width: 800, height: 300))
+    }
+
+    private static func testCommandModel() {
+        expectName("menuCommands count", "\(WindowCommand.menuCommands.count)", "25")
+        expectName("maximize name", WindowCommand.maximize.displayName, "Maximize")
+        expectName("right 1/2 name", absolute(.horizontal, .half, .last).displayName, "Right 1/2")
+        expectName("vertical middle 1/3 name", absolute(.vertical, .third, .center).displayName, "Middle 1/3")
+        expectName("move name", WindowCommand.move(.left).displayName, "Move Left")
+        expectName("relative name", WindowCommand.relativeHalf(.top).displayName, "Shrink Top 1/2")
+        expectName("undo name", WindowCommand.undo.displayName, "Undo")
+    }
+}

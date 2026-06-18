@@ -1,5 +1,6 @@
 import Cocoa
 
+@MainActor
 enum WindowCommandExecutor {
     static func run(
         _ command: WindowCommand,

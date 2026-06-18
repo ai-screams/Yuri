@@ -1,6 +1,7 @@
 import Cocoa
 import os
 
+@MainActor
 final class StatusBarController: NSObject, NSMenuDelegate {
     var onOpenSettings: (() -> Void)?
 

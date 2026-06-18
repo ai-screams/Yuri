@@ -1,5 +1,6 @@
 import AppKit
 
+@MainActor
 enum WorkAreaResolver {
     static func workArea(forAXWindowFrame axFrame: CGRect) -> CGRect? {
         let cocoaWindow = CoordinateSpace.axToCocoa(axFrame)

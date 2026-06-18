@@ -7,6 +7,7 @@
 
 import Cocoa
 
+@MainActor
 final class ViewController: NSViewController {
     private enum Layout {
         static let windowSize = NSSize(width: 560, height: 420)

@@ -8,6 +8,7 @@ struct ResolvedWindow: Equatable {
     let frame: WindowFrame
 }
 
+@MainActor
 enum FocusedWindowResolver {
     private static let supportedSubroles: Set<String> = [kAXStandardWindowSubrole as String]
 

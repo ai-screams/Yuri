@@ -2,6 +2,7 @@ import ApplicationServices
 
 /// 창별 직전 frame을 1단계 저장한다. AXUIElement는 CFEqual/CFHash로 같은 창을 식별한다.
 /// 메뉴(메인 스레드)에서만 사용한다. 동시성 격리(@MainActor)는 전역 단축키 도입(Phase 6) 때 정리.
+@MainActor
 final class WindowUndoStore {
     private struct Key: Hashable {
         let element: AXUIElement

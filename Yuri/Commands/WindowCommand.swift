@@ -131,7 +131,8 @@ enum WindowCommand: Equatable {
         }
     }
 
-    /// DEBUG 메뉴에 노출할 명령 목록. center/middle은 1/3에만 둔다.
+    /// DEBUG 메뉴에 노출할 명령 목록. 절대 배치의 center/middle slot은 1/3에만 둔다
+    /// (move(.center)는 별개의 이동 명령).
     static let menuCommands: [WindowCommand] = [
         .maximize,
         .absolute(AbsolutePlacement(axis: .horizontal, fraction: .half, slot: .first)),

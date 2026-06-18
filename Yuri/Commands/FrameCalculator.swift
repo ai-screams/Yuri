@@ -50,21 +50,31 @@ enum FrameCalculator {
     // MARK: - 이동 (현재 크기 유지, 단위=현재 창 크기, 작업영역 클램프)
 
     private static func moveFrame(_ direction: MoveDirection, current: CGRect, workArea: CGRect) -> CGRect {
+        let xLower = workArea.minX
+        let xUpper = workArea.maxX - current.width
+        let yLower = workArea.minY
+        let yUpper = workArea.maxY - current.height
         var origin = current.origin
         switch direction {
         case .left:
-            origin.x = max(workArea.minX, current.minX - current.width)
+            origin.x = clamped(current.minX - current.width, lower: xLower, upper: xUpper)
         case .right:
-            origin.x = min(workArea.maxX - current.width, current.minX + current.width)
+            origin.x = clamped(current.minX + current.width, lower: xLower, upper: xUpper)
         case .up:
-            origin.y = max(workArea.minY, current.minY - current.height)
+            origin.y = clamped(current.minY - current.height, lower: yLower, upper: yUpper)
         case .down:
-            origin.y = min(workArea.maxY - current.height, current.minY + current.height)
+            origin.y = clamped(current.minY + current.height, lower: yLower, upper: yUpper)
         case .center:
             origin.x = workArea.minX + (workArea.width - current.width) / 2
             origin.y = workArea.minY + (workArea.height - current.height) / 2
         }
         return CGRect(origin: origin, size: current.size)
+    }
+
+    /// 값을 [lower, upper] 범위로 클램프. 창이 작업영역보다 커서 upper<lower면 lower(좌상단)에 고정.
+    private static func clamped(_ value: CGFloat, lower: CGFloat, upper: CGFloat) -> CGFloat {
+        guard upper > lower else { return lower }
+        return Swift.max(lower, Swift.min(upper, value))
     }
 
     // MARK: - 상대 변형 (현재 frame 기준, 방향 edge 고정)

@@ -15,10 +15,15 @@ enum WindowCommandExecutor {
         }
 
         if command == .undo {
-            guard let previous = undoStore.previousFrame(for: resolved.element) else {
+            guard let previous = undoStore.previousFrame(for: resolved.element, pid: resolved.pid) else {
                 return .failure(.noUndoState)
             }
-            return WindowFrameWriter.apply(previous, to: resolved.element)
+            let result = WindowFrameWriter.apply(previous, to: resolved.element)
+            if case .success = result {
+                // 1단계 복원이므로 소비한 entry는 제거(반복 undo 방지 + 누적 방지).
+                undoStore.clear(for: resolved.element)
+            }
+            return result
         }
 
         guard let workArea = WorkAreaResolver.workArea(forAXWindowFrame: resolved.frame.rect) else {
@@ -26,7 +31,7 @@ enum WindowCommandExecutor {
         }
 
         // 일반 명령은 적용 직전 현재 frame을 1단계 저장(되돌리기용).
-        undoStore.record(resolved.frame.rect, for: resolved.element)
+        undoStore.record(resolved.frame.rect, pid: resolved.pid, for: resolved.element)
         let target = FrameCalculator.targetFrame(
             for: command,
             current: resolved.frame.rect,

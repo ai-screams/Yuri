@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let frontmostAppTracker = FrontmostAppTracker()
     private let windowUndoStore = WindowUndoStore()
     private let settingsWindowController = SettingsWindowController()
+    private let hotkeyService = HotkeyService()
     private lazy var statusBarController = StatusBarController(
         frontmostAppTracker: frontmostAppTracker,
         windowUndoStore: windowUndoStore
@@ -25,6 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.settingsWindowController.show()
         }
         statusBarController.install()
+        registerDefaultHotkeys()
         debugShowSettingsOnLaunchIfNeeded()
 
         NotificationCenter.default.addObserver(
@@ -52,6 +54,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+
+    private func registerDefaultHotkeys() {
+        for binding in DefaultHotkeys.standard {
+            let command = binding.command
+            hotkeyService.register(keyCode: binding.keyCode, modifiers: binding.modifiers) { [weak self] in
+                guard let self else { return }
+                runHotkeyCommand(command)
+            }
+        }
+    }
+
+    private func runHotkeyCommand(_ command: WindowCommand) {
+        let result = WindowCommandExecutor.run(command, tracker: frontmostAppTracker, undoStore: windowUndoStore)
+        switch result {
+        case .success:
+            break
+        case let .failure(error):
+            NSSound.beep()
+            Log.windows.debug(
+                "Hotkey \(command.displayName, privacy: .public) -> FAIL \(error.userFacingMessage, privacy: .public)"
+            )
+        }
     }
 
     @objc private func handleDidBecomeActive(_ notification: Notification) {

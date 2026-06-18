@@ -49,4 +49,10 @@ final class WindowUndoStore {
         entries.removeValue(forKey: key)
         order.removeAll { $0 == key }
     }
+
+    /// 저장된 모든 직전 frame을 버린다. 디스플레이 재구성 시 절대 frame이 무효화되므로 호출한다.
+    func clearAll() {
+        entries.removeAll()
+        order.removeAll()
+    }
 }

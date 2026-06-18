@@ -8,6 +8,20 @@
 import Cocoa
 
 final class ViewController: NSViewController {
+    private enum Layout {
+        static let windowSize = NSSize(width: 560, height: 420)
+        static let contentInset: CGFloat = 24
+        static let sectionSpacing: CGFloat = 16
+        static let sectionContentSpacing: CGFloat = 8
+        static let sectionPadding: CGFloat = 16
+        static let sectionCornerRadius: CGFloat = 10
+        static let sectionBorderWidth: CGFloat = 1
+        static let minSectionWidth: CGFloat = 512
+        static let titleFontSize: CGFloat = 22
+        static let sectionTitleFontSize: CGFloat = 15
+        static let statusFontSize: CGFloat = 13
+    }
+
     private let titleLabel = NSTextField(labelWithString: "Yuri Settings")
     private let subtitleLabel = NSTextField(
         wrappingLabelWithString: "Development shell for Yuri's menu bar workflow and permissions."
@@ -44,7 +58,7 @@ final class ViewController: NSViewController {
     private lazy var contentStackView = makeContentStackView()
 
     override func loadView() {
-        view = NSView(frame: NSRect(x: 0, y: 0, width: 560, height: 420))
+        view = NSView(frame: NSRect(origin: .zero, size: Layout.windowSize))
     }
 
     override func viewDidLoad() {
@@ -83,32 +97,35 @@ final class ViewController: NSViewController {
     }
 
     private func configureView() {
-        titleLabel.font = .systemFont(ofSize: 22, weight: .semibold)
+        titleLabel.font = .systemFont(ofSize: Layout.titleFontSize, weight: .semibold)
         subtitleLabel.textColor = .secondaryLabelColor
         subtitleLabel.maximumNumberOfLines = 0
 
-        permissionsTitleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+        permissionsTitleLabel.font = .systemFont(ofSize: Layout.sectionTitleFontSize, weight: .semibold)
 
-        statusLabel.font = .systemFont(ofSize: 13, weight: .medium)
+        statusLabel.font = .systemFont(ofSize: Layout.statusFontSize, weight: .medium)
         detailLabel.textColor = .secondaryLabelColor
         detailLabel.lineBreakMode = .byWordWrapping
         detailLabel.maximumNumberOfLines = 0
 
-        shortcutsTitleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+        shortcutsTitleLabel.font = .systemFont(ofSize: Layout.sectionTitleFontSize, weight: .semibold)
         shortcutsBodyLabel.textColor = .secondaryLabelColor
         shortcutsBodyLabel.maximumNumberOfLines = 0
 
-        behaviorTitleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
+        behaviorTitleLabel.font = .systemFont(ofSize: Layout.sectionTitleFontSize, weight: .semibold)
         behaviorBodyLabel.textColor = .secondaryLabelColor
         behaviorBodyLabel.maximumNumberOfLines = 0
 
         view.addSubview(contentStackView)
 
         NSLayoutConstraint.activate([
-            contentStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            contentStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
-            contentStackView.topAnchor.constraint(equalTo: view.topAnchor, constant: 24),
-            contentStackView.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -24)
+            contentStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.contentInset),
+            contentStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.contentInset),
+            contentStackView.topAnchor.constraint(equalTo: view.topAnchor, constant: Layout.contentInset),
+            contentStackView.bottomAnchor.constraint(
+                lessThanOrEqualTo: view.bottomAnchor,
+                constant: -Layout.contentInset
+            )
         ])
     }
 
@@ -141,7 +158,7 @@ final class ViewController: NSViewController {
         ])
         stackView.alignment = .leading
         stackView.orientation = .vertical
-        stackView.spacing = 16
+        stackView.spacing = Layout.sectionSpacing
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }
@@ -150,15 +167,20 @@ final class ViewController: NSViewController {
         let stackView = NSStackView(views: [titleLabel] + bodyViews)
         stackView.alignment = .leading
         stackView.orientation = .vertical
-        stackView.spacing = 8
+        stackView.spacing = Layout.sectionContentSpacing
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.edgeInsets = NSEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        stackView.edgeInsets = NSEdgeInsets(
+            top: Layout.sectionPadding,
+            left: Layout.sectionPadding,
+            bottom: Layout.sectionPadding,
+            right: Layout.sectionPadding
+        )
 
         let box = NSBox()
         box.boxType = .custom
         box.borderType = .lineBorder
-        box.cornerRadius = 10
-        box.borderWidth = 1
+        box.cornerRadius = Layout.sectionCornerRadius
+        box.borderWidth = Layout.sectionBorderWidth
         box.borderColor = .separatorColor
         box.contentViewMargins = .zero
         box.translatesAutoresizingMaskIntoConstraints = false
@@ -170,7 +192,7 @@ final class ViewController: NSViewController {
                 stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
                 stackView.topAnchor.constraint(equalTo: contentView.topAnchor),
                 stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-                box.widthAnchor.constraint(greaterThanOrEqualToConstant: 512)
+                box.widthAnchor.constraint(greaterThanOrEqualToConstant: Layout.minSectionWidth)
             ])
         }
 

@@ -11,6 +11,9 @@ struct ResolvedWindow: Equatable {
 enum FocusedWindowResolver {
     private static let supportedSubroles: Set<String> = [kAXStandardWindowSubrole as String]
 
+    /// 비공개 속성. 풀스크린은 subrole로 구분 불가해 이 속성으로 판별한다(macOS 10.11+ 사실상 표준).
+    private static let fullScreenAttribute = "AXFullScreen"
+
     static func resolveFocusedWindow(for app: NSRunningApplication) -> Result<ResolvedWindow, WindowResolutionError> {
         guard AccessibilityPermissionService.currentStatus().isTrusted else {
             return .failure(.permissionDenied)
@@ -23,7 +26,7 @@ enum FocusedWindowResolver {
         }
 
         // 풀스크린은 subrole로 구분 불가 → subrole 검사보다 먼저, 비공개 "AXFullScreen" 속성으로 판별.
-        if AXAttribute.bool(window, "AXFullScreen") == true {
+        if AXAttribute.bool(window, fullScreenAttribute) == true {
             return .failure(.fullscreenWindow)
         }
 

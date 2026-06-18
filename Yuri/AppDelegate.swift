@@ -33,6 +33,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSApplication.didBecomeActiveNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleScreenParametersChanged(_:)),
+            name: NSApplication.didChangeScreenParametersNotification,
+            object: nil
+        )
     }
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
@@ -50,6 +56,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func handleDidBecomeActive(_ notification: Notification) {
         statusBarController.refreshPermissionState()
+    }
+
+    @objc private func handleScreenParametersChanged(_ notification: Notification) {
+        // 디스플레이 연결/해제·배치 변경 시 저장된 절대 frame은 무효 → undo 이력을 버린다.
+        windowUndoStore.clearAll()
+        Log.windows.debug("Screen parameters changed; cleared window undo history.")
     }
 
     private func debugShowSettingsOnLaunchIfNeeded() {

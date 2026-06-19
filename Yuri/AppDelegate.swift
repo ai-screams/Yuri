@@ -8,7 +8,6 @@
 import Cocoa
 import os
 
-@main
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let frontmostAppTracker = FrontmostAppTracker()
@@ -56,14 +55,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.removeObserver(self)
     }
 
-    private func registerDefaultHotkeys() {
+    @discardableResult
+    private func registerDefaultHotkeys() -> Int {
+        var count = 0
         for binding in DefaultHotkeys.standard {
             let command = binding.command
-            hotkeyService.register(keyCode: binding.keyCode, modifiers: binding.modifiers) { [weak self] in
+            let ok = hotkeyService.register(keyCode: binding.keyCode, modifiers: binding.modifiers) { [weak self] in
                 guard let self else { return }
                 runHotkeyCommand(command)
             }
+            if ok { count += 1 }
         }
+        return count
     }
 
     private func runHotkeyCommand(_ command: WindowCommand) {

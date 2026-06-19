@@ -7,6 +7,12 @@ format:
 build:
 	./scripts/build.sh
 
+# 권한이 필요한 실행/테스트는 반드시 `make run`을 쓴다.
+# `make build`는 CODE_SIGNING_ALLOWED=NO(ad-hoc) → cdhash 불안정 → TCC 권한 꼬임.
+# `make run`은 Apple Development로 정상 서명해 권한이 유지된다(정공법).
+run:
+	./scripts/run.sh
+
 test:
 	./scripts/test.sh
 

@@ -23,7 +23,7 @@ final class HotkeyService {
         nextID += 1
         let hotKeyID = EventHotKeyID(signature: signature, id: id)
         var ref: EventHotKeyRef?
-        let status = RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetEventDispatcherTarget(), 0, &ref)
+        let status = RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetApplicationEventTarget(), 0, &ref)
         guard status == noErr, let ref else {
             Log.app.error("RegisterEventHotKey failed (status \(status), keyCode \(keyCode))")
             return false
@@ -57,7 +57,7 @@ final class HotkeyService {
         )
         let userData = Unmanaged.passUnretained(self).toOpaque()
         InstallEventHandler(
-            GetEventDispatcherTarget(),
+            GetApplicationEventTarget(),
             hotkeyEventHandler,
             1,
             &eventType,

@@ -13,10 +13,32 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		681C33E22F7ACA7800C6B786 /* Yuri */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AABBCCDD0011223344556677 /* Exceptions for "Yuri" folder in "Yuri" target */,
+			);
 			path = Yuri;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AABBCCDD0011223344556677 /* Exceptions for "Yuri" folder in "Yuri" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AGENTS.md,
+				Commands/AGENTS.md,
+				Hotkeys/AGENTS.md,
+				Launch/AGENTS.md,
+				Permissions/AGENTS.md,
+				Preferences/AGENTS.md,
+				Settings/AGENTS.md,
+				Shared/AGENTS.md,
+				StatusBar/AGENTS.md,
+				WindowAccess/AGENTS.md,
+			);
+			target = 681C33DF2F7ACA7800C6B786 /* Yuri */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		681C33DD2F7ACA7800C6B786 /* Frameworks */ = {
@@ -278,6 +300,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7K6MK3KP9K;
 				ENABLE_APP_SANDBOX = NO;
+				EXCLUDED_SOURCE_FILE_NAMES = "*.md";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -309,6 +332,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7K6MK3KP9K;
 				ENABLE_APP_SANDBOX = NO;
+				EXCLUDED_SOURCE_FILE_NAMES = "*.md";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";

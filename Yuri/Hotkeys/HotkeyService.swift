@@ -33,14 +33,19 @@ final class HotkeyService {
         return true
     }
 
-    func reload(_ bindings: [HotkeyBinding], perform: @escaping (WindowCommand) -> Void) {
+    /// 모든 바인딩을 재등록하고, 등록에 실패한 바인딩(보통 시스템/타앱이 이미 점유)을 반환한다.
+    @discardableResult
+    func reload(_ bindings: [HotkeyBinding], perform: @escaping (WindowCommand) -> Void) -> [HotkeyBinding] {
         unregisterAll()
+        var failed: [HotkeyBinding] = []
         for binding in bindings {
             let command = binding.command
-            register(keyCode: binding.keyCode, modifiers: binding.modifiers) {
+            let registered = register(keyCode: binding.keyCode, modifiers: binding.modifiers) {
                 perform(command)
             }
+            if !registered { failed.append(binding) }
         }
+        return failed
     }
 
     func unregisterAll() {

@@ -11,7 +11,8 @@ import os
 @MainActor
 final class ViewController: NSViewController {
     private enum Layout {
-        static let windowSize = NSSize(width: 560, height: 420)
+        static let windowSize = NSSize(width: 560, height: 640)
+        static let shortcutsContentWidth: CGFloat = 480
         static let contentInset: CGFloat = 24
         static let sectionSpacing: CGFloat = 16
         static let sectionContentSpacing: CGFloat = 8
@@ -26,16 +27,22 @@ final class ViewController: NSViewController {
 
     private let preferencesStore: PreferencesStore
     private let launchService: LaunchAtLoginService
-    private let onPresetChange: () -> Void
+    private let onHotkeysChanged: () -> Void
+    private let registrationFailures: () -> Set<String>
+    private let setHotkeysSuspended: (Bool) -> Void
 
     init(
         preferencesStore: PreferencesStore,
         launchService: LaunchAtLoginService,
-        onPresetChange: @escaping () -> Void
+        onHotkeysChanged: @escaping () -> Void,
+        registrationFailures: @escaping () -> Set<String>,
+        setHotkeysSuspended: @escaping (Bool) -> Void
     ) {
         self.preferencesStore = preferencesStore
         self.launchService = launchService
-        self.onPresetChange = onPresetChange
+        self.onHotkeysChanged = onHotkeysChanged
+        self.registrationFailures = registrationFailures
+        self.setHotkeysSuspended = setHotkeysSuspended
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -55,10 +62,11 @@ final class ViewController: NSViewController {
     private lazy var actionButton = makeActionButton()
 
     private let shortcutsTitleLabel = NSTextField(labelWithString: "Shortcuts")
-    private let presetCaptionLabel = NSTextField(labelWithString: "Keymap preset")
-    private lazy var presetPopUp = makePresetPopUp()
-    private let presetHintLabel = NSTextField(
-        wrappingLabelWithString: "Standard uses arrow keys; Vim swaps to H/J/K/L for halves, moves, and resizes."
+    private lazy var shortcutsSectionView = ShortcutsSectionView(
+        preferencesStore: preferencesStore,
+        onHotkeysChanged: onHotkeysChanged,
+        registrationFailures: registrationFailures,
+        setHotkeysSuspended: setHotkeysSuspended
     )
 
     private let behaviorTitleLabel = NSTextField(labelWithString: "Behavior")
@@ -73,7 +81,7 @@ final class ViewController: NSViewController {
     )
     private lazy var shortcutsSection = makeSection(
         titleLabel: shortcutsTitleLabel,
-        bodyViews: [presetCaptionLabel, presetPopUp, presetHintLabel]
+        bodyViews: [shortcutsSectionView]
     )
     private lazy var behaviorSection = makeSection(
         titleLabel: behaviorTitleLabel,
@@ -103,6 +111,7 @@ final class ViewController: NSViewController {
         super.viewWillAppear()
         updatePermissionUI()
         updateBehaviorUI()
+        shortcutsSectionView.refresh()
     }
 
     deinit {
@@ -121,12 +130,6 @@ final class ViewController: NSViewController {
     @objc private func handleDidBecomeActive(_ notification: Notification) {
         updatePermissionUI()
         updateBehaviorUI()
-    }
-
-    @objc private func presetChanged(_ sender: NSPopUpButton) {
-        guard let preset = sender.selectedItem?.representedObject as? HotkeyPreset else { return }
-        preferencesStore.activePreset = preset
-        onPresetChange()
     }
 
     @objc private func soundFeedbackChanged(_ sender: NSButton) {
@@ -157,6 +160,10 @@ final class ViewController: NSViewController {
         configureFonts()
         view.addSubview(contentStackView)
 
+        shortcutsSectionView.widthAnchor.constraint(
+            equalToConstant: Layout.shortcutsContentWidth
+        ).isActive = true
+
         NSLayoutConstraint.activate([
             contentStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.contentInset),
             contentStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.contentInset),
@@ -180,9 +187,6 @@ final class ViewController: NSViewController {
         detailLabel.maximumNumberOfLines = 0
 
         shortcutsTitleLabel.font = .systemFont(ofSize: Layout.sectionTitleFontSize, weight: .semibold)
-        presetCaptionLabel.font = .systemFont(ofSize: Layout.statusFontSize, weight: .medium)
-        presetHintLabel.textColor = .secondaryLabelColor
-        presetHintLabel.maximumNumberOfLines = 0
 
         behaviorTitleLabel.font = .systemFont(ofSize: Layout.sectionTitleFontSize, weight: .semibold)
         launchApprovalLabel.textColor = .systemOrange
@@ -213,21 +217,6 @@ final class ViewController: NSViewController {
             launchApprovalLabel.stringValue =
                 "Login item is registered but needs approval in System Settings > General > Login Items."
         }
-    }
-
-    private func makePresetPopUp() -> NSPopUpButton {
-        let popUp = NSPopUpButton(frame: .zero, pullsDown: false)
-        // 각 항목에 프리셋을 representedObject로 묶어 위치(index) 의존을 피한다.
-        for preset in HotkeyPreset.allCases {
-            popUp.addItem(withTitle: preset.displayName)
-            popUp.lastItem?.representedObject = preset
-        }
-        if let index = HotkeyPreset.allCases.firstIndex(of: preferencesStore.activePreset) {
-            popUp.selectItem(at: index)
-        }
-        popUp.target = self
-        popUp.action = #selector(presetChanged(_:))
-        return popUp
     }
 
     private func makeSoundFeedbackButton() -> NSButton {

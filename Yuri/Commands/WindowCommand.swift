@@ -3,6 +3,15 @@ import CoreGraphics
 nonisolated enum Axis: Equatable {
     case horizontal
     case vertical
+
+    var token: String {
+        switch self {
+        case .horizontal:
+            "horizontal"
+        case .vertical:
+            "vertical"
+        }
+    }
 }
 
 nonisolated enum Fraction: Equatable {
@@ -31,12 +40,34 @@ nonisolated enum Fraction: Equatable {
             "2/3"
         }
     }
+
+    var token: String {
+        switch self {
+        case .half:
+            "half"
+        case .third:
+            "third"
+        case .twoThird:
+            "twoThird"
+        }
+    }
 }
 
 nonisolated enum Slot: Equatable {
     case first
     case center
     case last
+
+    var token: String {
+        switch self {
+        case .first:
+            "first"
+        case .center:
+            "center"
+        case .last:
+            "last"
+        }
+    }
 }
 
 nonisolated struct AbsolutePlacement: Equatable {
@@ -87,6 +118,22 @@ nonisolated enum MoveDirection: Equatable {
             "Center"
         }
     }
+
+    /// 영속 식별자에 쓰는 안정 토큰. displayName과 분리해 UI 문구 변경이 저장 키를 깨지 않게 한다.
+    var token: String {
+        switch self {
+        case .left:
+            "left"
+        case .right:
+            "right"
+        case .up:
+            "up"
+        case .down:
+            "down"
+        case .center:
+            "center"
+        }
+    }
 }
 
 nonisolated enum RelativeAnchor: Equatable {
@@ -105,6 +152,20 @@ nonisolated enum RelativeAnchor: Equatable {
             "Top"
         case .bottom:
             "Bottom"
+        }
+    }
+
+    /// 영속 식별자에 쓰는 안정 토큰. displayName과 분리해 UI 문구 변경이 저장 키를 깨지 않게 한다.
+    var token: String {
+        switch self {
+        case .left:
+            "left"
+        case .right:
+            "right"
+        case .top:
+            "top"
+        case .bottom:
+            "bottom"
         }
     }
 }
@@ -129,6 +190,28 @@ nonisolated enum WindowCommand: Equatable {
         case .undo:
             "Undo"
         }
+    }
+
+    /// 저장·조회용 안정 식별자. 커스텀 단축키 override의 키로 쓴다.
+    var identifier: String {
+        switch self {
+        case .maximize:
+            "maximize"
+        case .undo:
+            "undo"
+        case let .absolute(placement):
+            "absolute.\(placement.axis.token).\(placement.fraction.token).\(placement.slot.token)"
+        case let .move(direction):
+            "move.\(direction.token)"
+        case let .relativeHalf(anchor):
+            "relativeHalf.\(anchor.token)"
+        }
+    }
+
+    /// 식별자로 명령을 역조회한다(커스텀 단축키 디코딩용). 알 수 없으면 nil.
+    /// 불변식: 역조회 대상은 `menuCommands`(25개)뿐. 여기에 없는 명령의 식별자는 복원되지 않는다.
+    static func command(forIdentifier identifier: String) -> WindowCommand? {
+        menuCommands.first { $0.identifier == identifier }
     }
 
     /// DEBUG 메뉴에 노출할 명령 목록. 절대 배치의 center/middle slot은 1/3에만 둔다

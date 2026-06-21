@@ -15,10 +15,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let hotkeyService = HotkeyService()
     private let preferencesStore = PreferencesStore()
     private let launchAtLoginService = LaunchAtLoginService()
+    private var registrationFailureIdentifiers: Set<String> = []
     private lazy var settingsWindowController = SettingsWindowController(
         preferencesStore: preferencesStore,
         launchService: launchAtLoginService,
-        onPresetChange: { [weak self] in self?.reloadHotkeys() }
+        onHotkeysChanged: { [weak self] in self?.reloadHotkeys() },
+        registrationFailures: { [weak self] in self?.registrationFailureIdentifiers ?? [] },
+        setHotkeysSuspended: { [weak self] suspended in self?.setHotkeysSuspended(suspended) }
     )
     private lazy var statusBarController = StatusBarController(
         frontmostAppTracker: frontmostAppTracker,
@@ -62,8 +65,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func reloadHotkeys() {
-        hotkeyService.reload(preferencesStore.activePreset.bindings) { [weak self] command in
+        let bindings = BindingResolver.resolve(
+            preset: preferencesStore.activePreset,
+            overrides: preferencesStore.customShortcuts
+        )
+        let failed = hotkeyService.reload(bindings) { [weak self] command in
             self?.runHotkeyCommand(command)
+        }
+        registrationFailureIdentifiers = Set(failed.map(\.command.identifier))
+    }
+
+    /// 단축키 녹화 중에는 전역 핫키를 모두 해제하고, 끝나면 다시 등록한다(녹화 조합의 오발화 방지).
+    private func setHotkeysSuspended(_ suspended: Bool) {
+        if suspended {
+            hotkeyService.unregisterAll()
+        } else {
+            reloadHotkeys()
         }
     }
 

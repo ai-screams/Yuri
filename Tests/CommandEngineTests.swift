@@ -17,6 +17,7 @@ enum CommandEngineTests {
         testMoves()
         testRelativeHalves()
         testCommandModel()
+        testCommandIdentifiers()
 
         if failures == 0 {
             print("PASS — all \(checks) checks")
@@ -119,5 +120,21 @@ enum CommandEngineTests {
         expectName("move name", WindowCommand.move(.left).displayName, "Move Left")
         expectName("relative name", WindowCommand.relativeHalf(.top).displayName, "Shrink Top 1/2")
         expectName("undo name", WindowCommand.undo.displayName, "Undo")
+    }
+
+    private static func testCommandIdentifiers() {
+        let commands = WindowCommand.menuCommands
+        var roundTripped = 0
+        for command in commands where WindowCommand.command(forIdentifier: command.identifier) == command {
+            roundTripped += 1
+        }
+        expectName("identifier round-trip count", "\(roundTripped)", "25")
+        expectName("unique identifier count", "\(Set(commands.map { $0.identifier }).count)", "25")
+        expectName("absolute identifier", absolute(.horizontal, .third, .center).identifier,
+                   "absolute.horizontal.third.center")
+        expectName("move identifier", WindowCommand.move(.center).identifier, "move.center")
+        expectName("relative identifier", WindowCommand.relativeHalf(.top).identifier, "relativeHalf.top")
+        expectName("undo identifier", WindowCommand.undo.identifier, "undo")
+        expectName("unknown identifier is nil", "\(WindowCommand.command(forIdentifier: "nope") == nil)", "true")
     }
 }

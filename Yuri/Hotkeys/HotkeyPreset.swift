@@ -41,7 +41,7 @@ nonisolated enum HotkeyPreset: String, CaseIterable {
         // Undo: Vim uses U=0x20, Standard uses Delete=0x33
         let undoKey = UInt32(isVim ? 0x20 : 0x33)
 
-        return absoluteHalfBindings(left: left, right: right, up: up, down: down, base: base)
+        return snapThrowBindings(left: left, right: right, up: up, down: down, base: base)
             + coreBindings(undoKey: undoKey, base: base)
             + moveBindings(left: left, right: right, up: up, down: down, moveMods: moveMods)
             + relativeHalfBindings(left: left, right: right, up: up, down: down, relMods: relMods)
@@ -49,7 +49,7 @@ nonisolated enum HotkeyPreset: String, CaseIterable {
             + twoThirdBindings(base: base)
     }
 
-    private func absoluteHalfBindings(
+    private func snapThrowBindings(
         left: UInt32,
         right: UInt32,
         up: UInt32,
@@ -57,10 +57,10 @@ nonisolated enum HotkeyPreset: String, CaseIterable {
         base: UInt32
     ) -> [HotkeyBinding] {
         [
-            makeAbsolute(.horizontal, .half, .first, left, base),
-            makeAbsolute(.horizontal, .half, .last, right, base),
-            makeAbsolute(.vertical, .half, .first, up, base),
-            makeAbsolute(.vertical, .half, .last, down, base)
+            HotkeyBinding(command: .snapThrow(.left), keyCode: left, modifiers: base),
+            HotkeyBinding(command: .snapThrow(.right), keyCode: right, modifiers: base),
+            HotkeyBinding(command: .snapThrow(.top), keyCode: up, modifiers: base),
+            HotkeyBinding(command: .snapThrow(.bottom), keyCode: down, modifiers: base)
         ]
     }
 

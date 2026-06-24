@@ -170,6 +170,55 @@ nonisolated enum RelativeAnchor: Equatable {
     }
 }
 
+nonisolated enum SnapEdge: Equatable {
+    case left
+    case right
+    case top
+    case bottom
+
+    /// 표시명. 기존 절대 반분과 동일하게 보여 UX 연속성을 유지한다.
+    var displayName: String {
+        switch self {
+        case .left:
+            "Left 1/2"
+        case .right:
+            "Right 1/2"
+        case .top:
+            "Top 1/2"
+        case .bottom:
+            "Bottom 1/2"
+        }
+    }
+
+    /// 영속 식별자에 쓰는 안정 토큰.
+    var token: String {
+        switch self {
+        case .left:
+            "left"
+        case .right:
+            "right"
+        case .top:
+            "top"
+        case .bottom:
+            "bottom"
+        }
+    }
+
+    /// 인접 디스플레이로 던졌을 때 진입 반대쪽 절반(우→좌, 좌→우, 위→하, 아래→위).
+    var opposite: SnapEdge {
+        switch self {
+        case .left:
+            .right
+        case .right:
+            .left
+        case .top:
+            .bottom
+        case .bottom:
+            .top
+        }
+    }
+}
+
 nonisolated enum CommandGroup: String, CaseIterable {
     case core
     case halves
@@ -219,6 +268,7 @@ nonisolated enum CommandGroup: String, CaseIterable {
 nonisolated enum WindowCommand: Equatable {
     case maximize
     case absolute(AbsolutePlacement)
+    case snapThrow(SnapEdge)
     case move(MoveDirection)
     case relativeHalf(RelativeAnchor)
     case undo
@@ -229,6 +279,8 @@ nonisolated enum WindowCommand: Equatable {
             "Maximize"
         case let .absolute(placement):
             placement.displayName
+        case let .snapThrow(edge):
+            edge.displayName
         case let .move(direction):
             "Move \(direction.displayName)"
         case let .relativeHalf(anchor):
@@ -247,6 +299,8 @@ nonisolated enum WindowCommand: Equatable {
             "undo"
         case let .absolute(placement):
             "absolute.\(placement.axis.token).\(placement.fraction.token).\(placement.slot.token)"
+        case let .snapThrow(edge):
+            "snapThrow.\(edge.token)"
         case let .move(direction):
             "move.\(direction.token)"
         case let .relativeHalf(anchor):
@@ -266,6 +320,8 @@ nonisolated enum WindowCommand: Equatable {
         switch self {
         case .maximize, .undo, .move(.center):
             .core
+        case .snapThrow:
+            .halves
         case .move:
             .move
         case .relativeHalf:
@@ -286,15 +342,15 @@ nonisolated enum WindowCommand: Equatable {
     /// (move(.center)는 별개의 이동 명령).
     static let menuCommands: [WindowCommand] = [
         .maximize,
-        .absolute(AbsolutePlacement(axis: .horizontal, fraction: .half, slot: .first)),
-        .absolute(AbsolutePlacement(axis: .horizontal, fraction: .half, slot: .last)),
+        .snapThrow(.left),
+        .snapThrow(.right),
         .absolute(AbsolutePlacement(axis: .horizontal, fraction: .third, slot: .first)),
         .absolute(AbsolutePlacement(axis: .horizontal, fraction: .third, slot: .center)),
         .absolute(AbsolutePlacement(axis: .horizontal, fraction: .third, slot: .last)),
         .absolute(AbsolutePlacement(axis: .horizontal, fraction: .twoThird, slot: .first)),
         .absolute(AbsolutePlacement(axis: .horizontal, fraction: .twoThird, slot: .last)),
-        .absolute(AbsolutePlacement(axis: .vertical, fraction: .half, slot: .first)),
-        .absolute(AbsolutePlacement(axis: .vertical, fraction: .half, slot: .last)),
+        .snapThrow(.top),
+        .snapThrow(.bottom),
         .absolute(AbsolutePlacement(axis: .vertical, fraction: .third, slot: .first)),
         .absolute(AbsolutePlacement(axis: .vertical, fraction: .third, slot: .center)),
         .absolute(AbsolutePlacement(axis: .vertical, fraction: .third, slot: .last)),

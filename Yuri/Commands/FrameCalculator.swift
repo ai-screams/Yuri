@@ -8,12 +8,33 @@ nonisolated enum FrameCalculator {
             workArea
         case let .absolute(placement):
             absoluteFrame(placement, current: current, workArea: workArea)
+        case let .snapThrow(edge):
+            // 순수 폴백 = 그 방향 절반(스냅). 인접 디스플레이로 던지는 분기는 Executor가 처리한다.
+            halfRect(edge, workArea: workArea)
         case let .move(direction):
             moveFrame(direction, current: current, workArea: workArea)
         case let .relativeHalf(anchor):
             relativeHalfFrame(anchor, current: current)
         case .undo:
             current
+        }
+    }
+
+    // MARK: - 절반 (snap/throw 공용; AX 좌표 — 상단 원점)
+
+    /// 작업영역 기준 그 방향 절반 사각형. 스냅 타깃과 "이미 절반인가" 비교에 공용으로 쓴다.
+    static func halfRect(_ edge: SnapEdge, workArea: CGRect) -> CGRect {
+        let halfWidth = workArea.width / 2
+        let halfHeight = workArea.height / 2
+        switch edge {
+        case .left:
+            return CGRect(x: workArea.minX, y: workArea.minY, width: halfWidth, height: workArea.height)
+        case .right:
+            return CGRect(x: workArea.midX, y: workArea.minY, width: halfWidth, height: workArea.height)
+        case .top:
+            return CGRect(x: workArea.minX, y: workArea.minY, width: workArea.width, height: halfHeight)
+        case .bottom:
+            return CGRect(x: workArea.minX, y: workArea.midY, width: workArea.width, height: halfHeight)
         }
     }
 

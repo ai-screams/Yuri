@@ -16,6 +16,7 @@ enum CommandEngineTests {
         testAxisIndependentComposition()
         testMoves()
         testRelativeHalves()
+        testSnapHalves()
         testCommandModel()
         testCommandIdentifiers()
 
@@ -110,6 +111,19 @@ enum CommandEngineTests {
                CGRect(x: 400, y: 25, width: 400, height: 1055))
         expect("relative bottom keeps bottom edge", target(.relativeHalf(.bottom), CGRect(x: 0, y: 25, width: 800, height: 600)),
                CGRect(x: 0, y: 325, width: 800, height: 300))
+    }
+
+    private static func testSnapHalves() {
+        let base = CGRect(x: 300, y: 200, width: 700, height: 500)
+        // snapThrow의 순수 폴백(스냅)은 그 방향 절반과 같다(던지기는 Executor에서 화면 의존).
+        expect("snap left = left 1/2", target(.snapThrow(.left), base), CGRect(x: 0, y: 25, width: 960, height: 1055))
+        expect("snap right = right 1/2", target(.snapThrow(.right), base), CGRect(x: 960, y: 25, width: 960, height: 1055))
+        expect("snap top = top 1/2", target(.snapThrow(.top), base), CGRect(x: 0, y: 25, width: 1920, height: 527.5))
+        expect("snap bottom = bottom 1/2", target(.snapThrow(.bottom), base),
+               CGRect(x: 0, y: 552.5, width: 1920, height: 527.5))
+        expectName("opposite left", SnapEdge.left.opposite.token, "right")
+        expectName("opposite top", SnapEdge.top.opposite.token, "bottom")
+        expectName("snap left name", WindowCommand.snapThrow(.left).displayName, "Left 1/2")
     }
 
     private static func testCommandModel() {

@@ -15,9 +15,32 @@ final class PreferencesStore {
     private let disabledCommandsKey = "disabledCommandIdentifiers"
     private let disabledGroupsKey = "disabledGroupTokens"
     private let menuBarIconHiddenKey = "menuBarIconHidden"
+    private let migratedAbsoluteHalfRemovedKey = "migration.absoluteHalfRemoved.v1"
+
+    /// feat/snap-throw-display: absolute half 명령 4개가 menuCommands에서 제거됨.
+    /// 이전 버전에서 커스텀 단축키를 설정했다면 orphan 키가 남아 있으므로 한 번만 정리한다.
+    private static let removedAbsoluteHalfIdentifiers: Set<String> = [
+        "absolute.horizontal.half.first",
+        "absolute.horizontal.half.last",
+        "absolute.vertical.half.first",
+        "absolute.vertical.half.last"
+    ]
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        migrateAbsoluteHalfRemoved()
+    }
+
+    private func migrateAbsoluteHalfRemoved() {
+        guard !defaults.bool(forKey: migratedAbsoluteHalfRemovedKey) else { return }
+        var shortcuts = customShortcuts
+        let before = shortcuts.count
+        shortcuts = shortcuts.filter { !Self.removedAbsoluteHalfIdentifiers.contains($0.key) }
+        if shortcuts.count != before {
+            customShortcuts = shortcuts
+            Log.app.info("Pruned \(before - shortcuts.count) orphaned absolute-half customShortcuts entries.")
+        }
+        defaults.set(true, forKey: migratedAbsoluteHalfRemovedKey)
     }
 
     var activePreset: HotkeyPreset {

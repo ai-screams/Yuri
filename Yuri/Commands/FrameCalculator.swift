@@ -58,6 +58,7 @@ nonisolated enum FrameCalculator {
 
     /// 현재 창을 `from` 작업영역 기준 상대 위치·크기를 유지한 채 `to` 작업영역으로 옮긴다(다음 디스플레이 이동).
     /// 크기는 대상 화면을 넘지 않게 캡(비율 1.0)하고, 위치는 대상 영역 안으로 클램프한다.
+    /// `from`이 너비 또는 높이가 0인 퇴화 사각형이면 `destination` 전체를 반환한다(창이 대상 화면을 채움).
     static func displayMoveRect(_ rect: CGRect, from: CGRect, to destination: CGRect) -> CGRect {
         guard from.width > 0, from.height > 0 else { return destination }
         let relativeX = (rect.minX - from.minX) / from.width

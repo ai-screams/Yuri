@@ -15,6 +15,7 @@ import AppKit
 @MainActor
 enum DisplayResolver {
     /// AX 창 frame이 놓인 화면 기준으로 `edge` 방향 인접 화면의 visibleFrame을 AX 좌표로 반환. 없으면 nil.
+    /// @MainActor: 열거형 전체가 @MainActor이므로 이 메서드도 메인 액터에서만 호출 가능 (`NSScreen.screens` 접근).
     static func adjacentWorkArea(forAXWindowFrame axFrame: CGRect, edge: SnapEdge) -> CGRect? {
         let cocoaWindow = CoordinateSpace.axToCocoa(axFrame)
         guard let current = bestScreen(for: cocoaWindow),
@@ -63,6 +64,8 @@ enum DisplayResolver {
     }
 
     /// Cocoa 좌표(원점 좌하단, Y 위로)에서 `edge` 방향에 있고 수직/수평으로 겹치는가.
+    /// 물리적으로 인접한 화면만이 아니라 그 방향에 있는 모든 화면이 후보가 된다.
+    /// 최종 선택은 `perpendicularGap`·`primaryGap` 거리 기준으로 이루어진다(가장 가까운 화면이 이긴다).
     private static func isInDirection(origin: CGRect, candidate: CGRect, edge: SnapEdge) -> Bool {
         switch edge {
         case .left:

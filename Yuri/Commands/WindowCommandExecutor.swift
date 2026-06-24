@@ -44,7 +44,7 @@ enum WindowCommandExecutor {
             return snapThrowTarget(edge, current: current, workArea: workArea)
         case let .moveToDisplay(edge):
             return moveToDisplayTarget(edge, current: current, workArea: workArea)
-        default:
+        case .maximize, .absolute, .move, .relativeHalf, .undo:
             return FrameCalculator.targetFrame(for: command, current: current, workArea: workArea)
         }
     }

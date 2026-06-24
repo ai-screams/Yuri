@@ -333,7 +333,7 @@ nonisolated enum WindowCommand: Equatable {
     }
 
     /// 식별자로 명령을 역조회한다(커스텀 단축키 디코딩용). 알 수 없으면 nil.
-    /// 불변식: 역조회 대상은 `menuCommands`(25개)뿐. 여기에 없는 명령의 식별자는 복원되지 않는다.
+    /// 불변식: 역조회 대상은 `menuCommands`(29개)뿐. 여기에 없는 명령의 식별자는 복원되지 않는다.
     static func command(forIdentifier identifier: String) -> WindowCommand? {
         menuCommands.first { $0.identifier == identifier }
     }

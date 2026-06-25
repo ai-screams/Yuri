@@ -6,7 +6,7 @@
 [![Swift](https://img.shields.io/badge/Swift-5-F05138?logo=swift&logoColor=white)](https://swift.org)
 [![CI](https://github.com/ai-screams/Azimuth/actions/workflows/ci.yml/badge.svg)](https://github.com/ai-screams/Azimuth/actions/workflows/ci.yml)
 [![Downloads](https://img.shields.io/github/downloads/ai-screams/Azimuth/total?color=1a2a4a)](https://github.com/ai-screams/Azimuth/releases)
-[![License](https://img.shields.io/badge/license-TBD-lightgrey)](#)
+[![License](https://img.shields.io/github/license/ai-screams/Azimuth?color=1a2a4a)](LICENSE)
 
 Azimuth is a keyboard-driven window manager for macOS, built with Swift and AppKit. It lives in the menu bar and lets you place, resize, move, and throw the focused window across your screens with predictable shortcuts — no mouse, no guesswork.
 
@@ -172,3 +172,9 @@ The `pre-commit` hook runs `SwiftFormat --lint` and `SwiftLint --strict`.
 ### CI
 
 GitHub Actions runs the same lint checks and a macOS `xcodebuild` build on pushes to `main` and on pull requests. It also runs `gitleaks` secret scanning and uploads a SARIF report to GitHub code scanning.
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+Copyright 2026 AiScream. "Azimuth" and the project name/branding are not granted under the license (Apache-2.0 does not grant trademark rights).

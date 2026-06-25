@@ -66,6 +66,8 @@ xcodebuild archive \
     -destination "generic/platform=macOS" \
     -archivePath "$ARCHIVE" \
     DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+    MARKETING_VERSION="$VERSION" \
+    CURRENT_PROJECT_VERSION="$VERSION" \
     CODE_SIGN_STYLE=Manual \
     CODE_SIGN_IDENTITY="$DEVELOPER_ID_IDENTITY" \
     ENABLE_HARDENED_RUNTIME=YES \

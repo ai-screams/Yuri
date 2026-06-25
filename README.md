@@ -21,17 +21,29 @@ Design principle: **predictability over clever inference.** Every command does e
 - macOS 26.3 (Tahoe) or later.
 - **Accessibility permission** (Azimuth controls other apps' windows through the Accessibility API).
 
-## Install & run
+## Privacy
 
-Azimuth is currently built from source.
+Azimuth runs entirely on your Mac. It collects no data, has no telemetry or analytics, and makes no network connections. The Accessibility permission is used solely to move and resize the windows of the app you're using.
+
+## Install
+
+### Download (recommended)
+
+1. Download the latest `Azimuth-<version>.dmg` from the [Releases page](https://github.com/ai-screams/Azimuth/releases/latest).
+2. Open the DMG and drag **Azimuth** into your **Applications** folder.
+3. Launch it, then enable **Azimuth** in **System Settings → Privacy & Security → Accessibility**.
+
+The build is Developer ID–signed and notarized, so it opens without Gatekeeper warnings.
+
+### Build from source
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/ai-screams/Azimuth
 cd Azimuth
 make run
 ```
 
-`make run` builds and launches a properly **code-signed** build (Apple Development identity). This matters: it keeps your Accessibility grant stable across rebuilds. Don't use `make build` to actually run Azimuth — that produces an ad-hoc-signed binary whose signature changes every build, which makes macOS treat it as a "new app" and repeatedly revoke its Accessibility permission. `make build` is for compile/CI verification only.
+`make run` builds and launches a properly **code-signed** build (Apple Development identity), which keeps your Accessibility grant stable across rebuilds. `make build` is ad-hoc signed (compile/CI checks only) and not for daily use.
 
 ### Grant Accessibility permission
 

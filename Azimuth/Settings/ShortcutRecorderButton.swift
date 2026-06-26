@@ -85,6 +85,14 @@ final class ShortcutRecorderButton: NSButton {
         finishRecording(with: HotkeyShortcut(keyCode: UInt32(event.keyCode), modifiers: carbonModifiers))
     }
 
+    /// 녹화 중에는 ⌘ 기반 조합도 가로채 기록한다 — 메인 메뉴(⌘Q·⌘W·⌘C 등)가 채가기 전에.
+    /// performKeyEquivalent는 키 윈도우 뷰 계층이 메뉴보다 먼저 받으므로 여기서 소비(true 반환).
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        guard isRecording else { return super.performKeyEquivalent(with: event) }
+        keyDown(with: event)
+        return true
+    }
+
     override func resignFirstResponder() -> Bool {
         if isRecording { cancelRecording() }
         return super.resignFirstResponder()

@@ -76,6 +76,14 @@ final class ShortcutRecorderButton: NSButton {
             cancelRecording()
             return
         }
+        // Tab은 녹화를 취소하고 정상 포커스 이동을 그대로 흘려보낸다(필드에 갇히지 않게).
+        if event.keyCode == UInt16(kVK_Tab) {
+            cancelRecording()
+            super.keyDown(with: event)
+            return
+        }
+        // 키 반복(꾹 누름)으로 의도치 않게 캡처되지 않도록 무시한다.
+        if event.isARepeat { return }
         let carbonModifiers = Self.carbonModifierMask(from: event.modifierFlags)
         guard carbonModifiers != 0 else {
             // 전역 단축키는 수정자가 최소 하나 필요하다.

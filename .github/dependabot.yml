@@ -1,0 +1,25 @@
+# Dependabot configuration
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# 이 프로젝트는 SPM/npm 의존성이 없고, 워크플로의 GitHub Actions만 관리 대상이다.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Seoul"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    # PR 노이즈를 줄이기 위해 minor/patch 업데이트를 한 PR로 묶는다.
+    groups:
+      actions-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"

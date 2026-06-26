@@ -133,11 +133,16 @@ rm -rf "$ICONSET"; mkdir -p "$ICONSET"
 cp "$ROOT_DIR/$APP_NAME/Assets.xcassets/AppIcon.appiconset/"icon_*.png "$ICONSET/"
 iconutil -c icns "$ICONSET" -o "$VOLICON"
 
+# DMG 창 배경(브랜드 다크 네이비 + 설치 화살표). background@2x.png가 같은 폴더에
+# 있으면 create-dmg가 retina용으로 자동 결합한다. 좌표는 540×380, 아이콘 100.
+BG="$ROOT_DIR/scripts/dmg/background.png"
+
 if command -v create-dmg >/dev/null 2>&1; then
     # create-dmg는 성공해도 종료코드가 비정상일 때가 있어 가드한다.
     create-dmg \
         --volname "$APP_NAME" \
         --volicon "$VOLICON" \
+        --background "$BG" \
         --window-size 540 380 \
         --icon-size 100 \
         --icon "$APP_NAME.app" 140 200 \

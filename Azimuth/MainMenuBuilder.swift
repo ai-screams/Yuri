@@ -14,13 +14,20 @@
 import AppKit
 
 enum MainMenuBuilder {
+    /// App 메뉴의 커스텀 항목(About·Settings) 액션 묶음. 둘 다 같은 타깃(보통 AppDelegate)을 쓴다.
+    struct AppMenuActions {
+        let target: AnyObject
+        let about: Selector
+        let settings: Selector
+    }
+
     /// 표준 App·Edit·Window 메뉴를 가진 메인 메뉴를 만든다.
     /// - Parameters:
     ///   - appName: "About/Hide/Quit <앱>" 레이블에 쓰인다.
-    ///   - settingsTarget/settingsAction: "Settings…"(⌘,) 항목에 연결한다.
-    static func make(appName: String, settingsTarget: AnyObject, settingsAction: Selector) -> NSMenu {
+    ///   - actions: "About <앱>"(링크 포함 커스텀 패널)·"Settings…"(⌘,) 항목에 연결할 타깃/셀렉터.
+    static func make(appName: String, actions: AppMenuActions) -> NSMenu {
         let mainMenu = NSMenu()
-        attach(appMenu(appName: appName, settingsTarget: settingsTarget, settingsAction: settingsAction), to: mainMenu)
+        attach(appMenu(appName: appName, actions: actions), to: mainMenu)
         attach(editMenu(), to: mainMenu)
         let window = windowMenu()
         attach(window, to: mainMenu)
@@ -35,13 +42,16 @@ enum MainMenuBuilder {
         mainMenu.addItem(item)
     }
 
-    private static func appMenu(appName: String, settingsTarget: AnyObject, settingsAction: Selector) -> NSMenu {
+    private static func appMenu(appName: String, actions: AppMenuActions) -> NSMenu {
         let menu = NSMenu(title: appName)
-        menu.addItem(withTitle: "About \(appName)",
-                     action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        let about = menu.addItem(withTitle: "About \(appName)", action: actions.about, keyEquivalent: "")
+        about.target = actions.target
         menu.addItem(.separator())
-        let settings = menu.addItem(withTitle: "Settings…", action: settingsAction, keyEquivalent: ",")
-        settings.target = settingsTarget
+        let settings = menu.addItem(withTitle: "Settings…", action: actions.settings, keyEquivalent: ",")
+        settings.target = actions.target
+        // 시스템 항목(About/Hide/Quit)은 macOS가 SF Symbol 아이콘을 자동으로 붙이지만
+        // 커스텀 "Settings…"는 없어 통일성이 깨진다 → gearshape 심볼을 직접 단다.
+        settings.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: nil)
         menu.addItem(.separator())
         menu.addItem(withTitle: "Hide \(appName)", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         let hideOthers = menu.addItem(withTitle: "Hide Others",

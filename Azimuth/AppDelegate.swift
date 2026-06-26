@@ -35,8 +35,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 어디서도 처리되지 않아 경고음만 난다(.accessory 빌드도 키 equivalent는 동작).
         NSApp.mainMenu = MainMenuBuilder.make(
             appName: "Azimuth",
-            settingsTarget: self,
-            settingsAction: #selector(openSettings(_:))
+            actions: .init(
+                target: self,
+                about: #selector(showAboutPanel(_:)),
+                settings: #selector(openSettings(_:))
+            )
         )
         statusBarController.onOpenSettings = { [weak self] in
             self?.settingsWindowController.show()
@@ -67,6 +70,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         settingsWindowController.show()
         return true
+    }
+
+    /// App 메뉴 "About Azimuth" 항목 액션. credits에 홈페이지·이슈·후원 링크를 단 표준 패널을 띄운다.
+    @objc private func showAboutPanel(_ sender: Any?) {
+        AboutPanel.present()
     }
 
     /// App 메뉴 "Settings…"(⌘,) 항목 액션.

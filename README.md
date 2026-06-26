@@ -183,6 +183,15 @@ The `pre-commit` hook runs `SwiftFormat --lint` and `SwiftLint --strict`.
 
 GitHub Actions runs the same lint checks and a macOS `xcodebuild` build on pushes to `main` and on pull requests. It also runs `gitleaks` secret scanning and uploads a SARIF report to GitHub code scanning.
 
+## Support
+
+Azimuth is free and open source — no paywall, no ads, no telemetry. If it earns a place in your workflow, you can support its development:
+
+- ☕ [**Buy Me a Coffee**](https://buymeacoffee.com/pignuante) — one-time tip
+- ♥ [**GitHub Sponsors**](https://github.com/sponsors/pignuante) — recurring support
+
+Entirely optional, always appreciated — there is no paywall and never will be.
+
 ## License
 
 Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).

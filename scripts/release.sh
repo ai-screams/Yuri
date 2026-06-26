@@ -126,10 +126,18 @@ STAGE="$BUILD_DIR/dmg-stage"
 rm -rf "$STAGE"; mkdir -p "$STAGE"
 cp -R "$APP" "$STAGE/"
 
+# 앱 아이콘으로 DMG 볼륨 아이콘(.icns) 생성 → create-dmg --volicon에 사용.
+ICONSET="$BUILD_DIR/$APP_NAME.iconset"
+VOLICON="$BUILD_DIR/$APP_NAME.icns"
+rm -rf "$ICONSET"; mkdir -p "$ICONSET"
+cp "$ROOT_DIR/$APP_NAME/Assets.xcassets/AppIcon.appiconset/"icon_*.png "$ICONSET/"
+iconutil -c icns "$ICONSET" -o "$VOLICON"
+
 if command -v create-dmg >/dev/null 2>&1; then
     # create-dmg는 성공해도 종료코드가 비정상일 때가 있어 가드한다.
     create-dmg \
         --volname "$APP_NAME" \
+        --volicon "$VOLICON" \
         --window-size 540 380 \
         --icon-size 100 \
         --icon "$APP_NAME.app" 140 200 \

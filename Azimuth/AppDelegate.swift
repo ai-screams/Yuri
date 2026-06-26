@@ -72,9 +72,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
-    /// App 메뉴 "About Azimuth" 항목 액션. credits에 홈페이지·이슈·후원 링크를 단 표준 패널을 띄운다.
+    /// App 메뉴 "About Azimuth" 항목 액션. 아이콘·버전·설명·링크 버튼을 담은 커스텀 About 창을 띄운다.
     @objc private func showAboutPanel(_ sender: Any?) {
-        AboutPanel.present()
+        AboutWindowController.shared.show()
     }
 
     /// App 메뉴 "Settings…"(⌘,) 항목 액션.

@@ -57,6 +57,16 @@ make run
 
 On first launch, open **System Settings → Privacy & Security → Accessibility** and enable **Azimuth**. The menu bar item and the Settings window both show the current permission state and a shortcut to the right settings pane.
 
+## Uninstall
+
+Azimuth has no installer, so removing it is just a few steps:
+
+1. Quit Azimuth, then drag it from **Applications** to the Trash.
+2. Remove its Accessibility entry: **System Settings → Privacy & Security → Accessibility** → select **Azimuth** → click **−**. macOS keeps this entry even after an app is deleted, and no app can remove its own entry through the system — so this step is manual (the same is true for every app that uses Accessibility).
+3. *(Optional)* delete its preferences: `defaults delete com.aiscream.Azimuth`
+
+If you enabled **Launch at login**, that registration is cleared automatically once the app is removed.
+
 ## Shortcuts
 
 Azimuth separates command groups by modifier layer:

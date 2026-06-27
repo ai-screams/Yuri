@@ -15,13 +15,7 @@ final class ViewController: NSViewController {
         static let shortcutsContentWidth: CGFloat = 480
         static let contentInset: CGFloat = 24
         static let sectionSpacing: CGFloat = 16
-        static let sectionContentSpacing: CGFloat = 8
-        static let sectionPadding: CGFloat = 16
-        static let sectionCornerRadius: CGFloat = 10
-        static let sectionBorderWidth: CGFloat = 1
-        static let minSectionWidth: CGFloat = 512
         static let titleFontSize: CGFloat = 22
-        static let sectionTitleFontSize: CGFloat = 15
         static let statusFontSize: CGFloat = 13
     }
 
@@ -59,12 +53,12 @@ final class ViewController: NSViewController {
         wrappingLabelWithString: "Configure Azimuth's shortcuts, feedback, and launch behavior."
     )
 
-    private let permissionsTitleLabel = NSTextField(labelWithString: "Permissions")
+    private let statusIcon = NSImageView()
     private let statusLabel = NSTextField(labelWithString: "")
     private let detailLabel = NSTextField(wrappingLabelWithString: "")
     private lazy var actionButton = makeActionButton()
+    private lazy var permissionStatusRow = makePermissionStatusRow()
 
-    private let shortcutsTitleLabel = NSTextField(labelWithString: "Shortcuts")
     private lazy var shortcutsSectionView = ShortcutsSectionView(
         preferencesStore: preferencesStore,
         onHotkeysChanged: onHotkeysChanged,
@@ -72,7 +66,6 @@ final class ViewController: NSViewController {
         setHotkeysSuspended: setHotkeysSuspended
     )
 
-    private let behaviorTitleLabel = NSTextField(labelWithString: "Behavior")
     private lazy var soundFeedbackButton = makeSoundFeedbackButton()
     private lazy var launchAtLoginButton = makeLaunchAtLoginButton()
     private let launchApprovalLabel = NSTextField(wrappingLabelWithString: "")
@@ -82,16 +75,19 @@ final class ViewController: NSViewController {
         wrappingLabelWithString: "When hidden, relaunch Azimuth to reopen this settings window."
     )
 
-    private lazy var permissionsSection = makeSection(
-        titleLabel: permissionsTitleLabel,
-        bodyViews: [statusLabel, detailLabel, actionButton]
+    private lazy var permissionsSection = SettingsCard.make(
+        symbolName: "lock.shield",
+        title: "Permissions",
+        bodyViews: [permissionStatusRow, detailLabel, actionButton]
     )
-    private lazy var shortcutsSection = makeSection(
-        titleLabel: shortcutsTitleLabel,
+    private lazy var shortcutsSection = SettingsCard.make(
+        symbolName: "keyboard",
+        title: "Shortcuts",
         bodyViews: [shortcutsSectionView]
     )
-    private lazy var behaviorSection = makeSection(
-        titleLabel: behaviorTitleLabel,
+    private lazy var behaviorSection = SettingsCard.make(
+        symbolName: "gearshape",
+        title: "Behavior",
         bodyViews: [
             soundFeedbackButton,
             launchAtLoginButton,
@@ -103,8 +99,20 @@ final class ViewController: NSViewController {
     )
     private lazy var contentStackView = makeContentStackView()
 
+    /// 모든 콘텐츠를 담는 바깥 세로 스크롤뷰. 창을 콘텐츠보다 낮게 줄여도 하단 섹션이
+    /// 잘리지 않고 스크롤된다(폭은 창에 고정되어 가로 스크롤은 발생하지 않는다).
+    private let scrollView = NSScrollView()
+    /// 스크롤 문서 뷰. 위에서부터 콘텐츠가 채워지도록 뒤집힌(flipped) 좌표계를 쓴다.
+    private let documentView = FlippedView()
+
     override func loadView() {
         view = NSView(frame: NSRect(origin: .zero, size: Layout.windowSize))
+    }
+
+    /// 콘텐츠 전체를 다 보여주기 위한 자연 높이(스크롤 없이 필요한 높이). 창 초기/최대 높이 산정에 쓴다.
+    func naturalContentHeight() -> CGFloat {
+        view.layoutSubtreeIfNeeded()
+        return documentView.frame.height
     }
 
     override func viewDidLoad() {
@@ -178,19 +186,41 @@ final class ViewController: NSViewController {
 
     private func configureView() {
         configureFonts()
-        view.addSubview(contentStackView)
+
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = false
+        scrollView.autohidesScrollers = true
+        scrollView.drawsBackground = false
+        scrollView.contentView.drawsBackground = false
+
+        documentView.translatesAutoresizingMaskIntoConstraints = false
+        documentView.addSubview(contentStackView)
+        scrollView.documentView = documentView
+        view.addSubview(scrollView)
 
         shortcutsSectionView.widthAnchor.constraint(
             equalToConstant: Layout.shortcutsContentWidth
         ).isActive = true
 
         NSLayoutConstraint.activate([
-            contentStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.contentInset),
-            contentStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.contentInset),
-            contentStackView.topAnchor.constraint(equalTo: view.topAnchor, constant: Layout.contentInset),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            // 문서 폭을 보이는 영역(clip view)에 맞춰 가로 스크롤을 막는다. 폭은 창에 고정되어 있다.
+            documentView.widthAnchor.constraint(equalTo: scrollView.contentView.widthAnchor),
+
+            contentStackView.leadingAnchor.constraint(
+                equalTo: documentView.leadingAnchor, constant: Layout.contentInset
+            ),
+            contentStackView.trailingAnchor.constraint(
+                equalTo: documentView.trailingAnchor, constant: -Layout.contentInset
+            ),
+            contentStackView.topAnchor.constraint(equalTo: documentView.topAnchor, constant: Layout.contentInset),
             contentStackView.bottomAnchor.constraint(
-                lessThanOrEqualTo: view.bottomAnchor,
-                constant: -Layout.contentInset
+                equalTo: documentView.bottomAnchor, constant: -Layout.contentInset
             )
         ])
     }
@@ -200,15 +230,11 @@ final class ViewController: NSViewController {
         subtitleLabel.textColor = .secondaryLabelColor
         subtitleLabel.maximumNumberOfLines = 0
 
-        permissionsTitleLabel.font = .systemFont(ofSize: Layout.sectionTitleFontSize, weight: .semibold)
         statusLabel.font = .systemFont(ofSize: Layout.statusFontSize, weight: .medium)
         detailLabel.textColor = .secondaryLabelColor
         detailLabel.lineBreakMode = .byWordWrapping
         detailLabel.maximumNumberOfLines = 0
 
-        shortcutsTitleLabel.font = .systemFont(ofSize: Layout.sectionTitleFontSize, weight: .semibold)
-
-        behaviorTitleLabel.font = .systemFont(ofSize: Layout.sectionTitleFontSize, weight: .semibold)
         launchApprovalLabel.textColor = .systemOrange
         launchApprovalLabel.font = .systemFont(ofSize: Layout.statusFontSize)
         launchApprovalLabel.maximumNumberOfLines = 0
@@ -224,6 +250,10 @@ final class ViewController: NSViewController {
         statusLabel.textColor = status.isTrusted ? .systemGreen : .systemOrange
         detailLabel.stringValue = status.settingsDetailText
         actionButton.isHidden = status.isTrusted
+
+        let symbol = status.isTrusted ? "checkmark.circle.fill" : "exclamationmark.triangle.fill"
+        statusIcon.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
+        statusIcon.contentTintColor = status.isTrusted ? .systemGreen : .systemOrange
     }
 
     /// SMAppService는 상태 변경 알림(KVO/Notification)을 제공하지 않으므로, 로그인 항목 상태는
@@ -242,40 +272,6 @@ final class ViewController: NSViewController {
                 "Login item is registered but needs approval in System Settings > General > Login Items."
         }
     }
-
-    private func makeSoundFeedbackButton() -> NSButton {
-        NSButton(
-            checkboxWithTitle: "Play a sound when a command can't run",
-            target: self,
-            action: #selector(soundFeedbackChanged(_:))
-        )
-    }
-
-    private func makeMenuBarIconButton() -> NSButton {
-        NSButton(
-            checkboxWithTitle: "Hide menu bar icon",
-            target: self,
-            action: #selector(menuBarIconChanged(_:))
-        )
-    }
-
-    private func makeLaunchAtLoginButton() -> NSButton {
-        NSButton(
-            checkboxWithTitle: "Launch Azimuth at login",
-            target: self,
-            action: #selector(launchAtLoginChanged(_:))
-        )
-    }
-
-    private func makeLaunchApprovalButton() -> NSButton {
-        let button = NSButton(
-            title: "Open Login Items Settings…",
-            target: self,
-            action: #selector(openLoginItemsSettings(_:))
-        )
-        button.bezelStyle = .rounded
-        return button
-    }
 }
 
 private extension ViewController {
@@ -284,6 +280,40 @@ private extension ViewController {
             title: "Open Accessibility Settings…",
             target: self,
             action: #selector(openAccessibilitySettings(_:))
+        )
+        button.bezelStyle = .rounded
+        return button
+    }
+
+    func makeSoundFeedbackButton() -> NSButton {
+        NSButton(
+            checkboxWithTitle: "Play a sound when a command can't run",
+            target: self,
+            action: #selector(soundFeedbackChanged(_:))
+        )
+    }
+
+    func makeMenuBarIconButton() -> NSButton {
+        NSButton(
+            checkboxWithTitle: "Hide menu bar icon",
+            target: self,
+            action: #selector(menuBarIconChanged(_:))
+        )
+    }
+
+    func makeLaunchAtLoginButton() -> NSButton {
+        NSButton(
+            checkboxWithTitle: "Launch Azimuth at login",
+            target: self,
+            action: #selector(launchAtLoginChanged(_:))
+        )
+    }
+
+    func makeLaunchApprovalButton() -> NSButton {
+        let button = NSButton(
+            title: "Open Login Items Settings…",
+            target: self,
+            action: #selector(openLoginItemsSettings(_:))
         )
         button.bezelStyle = .rounded
         return button
@@ -304,39 +334,27 @@ private extension ViewController {
         return stackView
     }
 
-    func makeSection(titleLabel: NSTextField, bodyViews: [NSView]) -> NSBox {
-        let stackView = NSStackView(views: [titleLabel] + bodyViews)
-        stackView.alignment = .leading
-        stackView.orientation = .vertical
-        stackView.spacing = Layout.sectionContentSpacing
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.edgeInsets = NSEdgeInsets(
-            top: Layout.sectionPadding,
-            left: Layout.sectionPadding,
-            bottom: Layout.sectionPadding,
-            right: Layout.sectionPadding
-        )
+    /// 권한 상태 아이콘(✓/⚠) + 상태 텍스트를 한 줄로 묶는다.
+    func makePermissionStatusRow() -> NSStackView {
+        statusIcon.imageScaling = .scaleProportionallyDown
+        statusIcon.translatesAutoresizingMaskIntoConstraints = false
 
-        let box = NSBox()
-        box.boxType = .custom
-        box.borderType = .lineBorder
-        box.cornerRadius = Layout.sectionCornerRadius
-        box.borderWidth = Layout.sectionBorderWidth
-        box.borderColor = .separatorColor
-        box.contentViewMargins = .zero
-        box.translatesAutoresizingMaskIntoConstraints = false
-        box.contentView?.addSubview(stackView)
+        let row = NSStackView(views: [statusIcon, statusLabel])
+        row.orientation = .horizontal
+        row.alignment = .centerY
+        row.spacing = 6
+        NSLayoutConstraint.activate([
+            statusIcon.widthAnchor.constraint(equalToConstant: 16),
+            statusIcon.heightAnchor.constraint(equalToConstant: 16)
+        ])
+        return row
+    }
+}
 
-        if let contentView = box.contentView {
-            NSLayoutConstraint.activate([
-                stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-                stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-                stackView.topAnchor.constraint(equalTo: contentView.topAnchor),
-                stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-                box.widthAnchor.constraint(greaterThanOrEqualToConstant: Layout.minSectionWidth)
-            ])
-        }
-
-        return box
+/// 위에서부터 콘텐츠가 쌓이도록 뒤집힌 좌표계를 쓰는 스크롤 문서 뷰.
+/// (기본 NSView는 원점이 좌하단이라 스크롤뷰 콘텐츠가 아래에서부터 쌓여 어색하다.)
+private final class FlippedView: NSView {
+    override var isFlipped: Bool {
+        true
     }
 }

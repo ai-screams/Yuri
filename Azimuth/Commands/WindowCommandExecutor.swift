@@ -55,7 +55,7 @@ enum WindowCommandExecutor {
 
     /// 이미 그 방향 절반을 채우고 있으면 인접 디스플레이의 반대쪽 절반으로 던지고, 아니면 현재 화면의 그 절반으로 스냅.
     private static func snapThrowTarget(_ edge: SnapEdge, current: CGRect, workArea: CGRect) -> CGRect {
-        guard FrameCalculator.fillsHalf(current, edge: edge, workArea: workArea) else {
+        guard FrameCalculator.isSnapped(current, to: edge, workArea: workArea) else {
             return FrameCalculator.halfRect(edge, workArea: workArea)
         }
         let adjacent = DisplayResolver.adjacentWorkArea(forAXWindowFrame: current, edge: edge)

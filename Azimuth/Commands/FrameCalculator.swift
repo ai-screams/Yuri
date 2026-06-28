@@ -47,7 +47,7 @@ nonisolated enum FrameCalculator {
     /// ③ 스냅 축과 수직인 축을 작업영역의 절반 이상 덮는다(모서리에 살짝 닿은 소형 부유창 오판 방지).
     /// 주축(스냅 방향)은 flush만 보므로 고정폭·최소폭 앱도 한쪽에 붙어 있으면 "스냅됨"으로 인정된다
     /// — 좌우/상하 대칭으로 throw가 가능해진다(면적 커버리지 기반의 좌우 비대칭 버그 제거).
-    static func fillsHalf(_ rect: CGRect, edge: SnapEdge, workArea: CGRect) -> Bool {
+    static func isSnapped(_ rect: CGRect, to edge: SnapEdge, workArea: CGRect) -> Bool {
         outerFlush(rect, edge: edge, workArea: workArea)
             && !outerFlush(rect, edge: edge.opposite, workArea: workArea)
             && spansPerpendicular(rect, edge: edge, workArea: workArea)

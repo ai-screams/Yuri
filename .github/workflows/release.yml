@@ -2,6 +2,12 @@ name: Release
 
 # 태그(v*) 푸시 시: 빌드 → Developer ID 서명 → 공증 → DMG → GitHub Release 자동 생성.
 # 예) git tag v1.0.0 && git push origin v1.0.0
+#
+# 보안 하드닝:
+#  - `environment: release`로 배포를 게이트한다(저장소 설정에서 required reviewer + 환경 한정 secret 지정).
+#    → 태그 푸시 권한이 탈취돼도 사람이 승인해야 서명·공증·릴리스가 실행된다.
+#  - 모든 액션은 commit SHA로 핀(공급망: 태그 변조 방지). 버전 주석은 Dependabot이 갱신한다.
+#  - permissions는 최소(contents: write)로만.
 on:
   push:
     tags:
@@ -10,19 +16,24 @@ on:
 permissions:
   contents: write # 릴리스 생성/자산 업로드
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false # 진행 중 릴리스를 취소하지 않는다(서명/공증 도중 중단 방지).
+
 jobs:
   release:
     runs-on: macos-15
+    environment: release # 배포 승인 게이트(필수 리뷰어는 저장소 Environments 설정에서 지정).
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Select Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: latest-stable
 
       - name: Import Developer ID certificate
-        uses: apple-actions/import-codesign-certs@v7
+        uses: apple-actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7
         with:
           p12-file-base64: ${{ secrets.DEVELOPER_ID_CERT_P12 }}
           p12-password: ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
@@ -39,7 +50,7 @@ jobs:
         run: ./scripts/release.sh
 
       - name: Create GitHub Release with DMG
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3
         with:
           files: dist/*.dmg
           generate_release_notes: true

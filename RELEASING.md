@@ -45,7 +45,15 @@ git push origin v1.0.0
 `.github/workflows/release.yml` then builds → signs → notarizes → packages the DMG → creates a
 **GitHub Release** with the DMG attached and auto-generated notes.
 
-### Required GitHub repository secrets
+The release job runs in a protected **`release` environment** and all actions are pinned to commit
+SHAs (Dependabot keeps them current). With a required reviewer on the environment, a pushed tag
+**waits for human approval** before the signing/notarization secrets are exposed — so a stolen tag
+push cannot publish a signed build on its own.
+
+### Required secrets (set on the `release` environment)
+
+Add these under **Settings → Environments → `release` → Environment secrets** (preferred over
+repo-wide secrets, so only the approved release job can read them):
 
 | Secret | What |
 |--------|------|
@@ -54,6 +62,19 @@ git push origin v1.0.0
 | `APPLE_TEAM_ID` | Apple Developer Team ID (e.g. `7K6MK3KP9K`) |
 | `APPLE_ID` | Apple ID email used for notarization |
 | `APPLE_APP_PASSWORD` | app-specific password for that Apple ID |
+
+### Enabling the automated release (one-time)
+
+1. **Settings → Environments → New environment** → name it `release`. Add yourself as a
+   **Required reviewer** (and optionally restrict deployment branches/tags).
+2. Add the five secrets above to that environment.
+3. (Recommended) **Settings → Tags** → add a protection rule for `v*` so only maintainers can push
+   release tags.
+4. Push a tag (`git tag vX.Y.Z && git push origin vX.Y.Z`) → approve the run when prompted.
+
+> Future hardening (optional): switch notarization to an **App Store Connect API key**
+> (`notarytool --key/--key-id/--issuer`) to avoid exposing the Apple ID + app password; this needs a
+> `(C)` branch in `scripts/release.sh`.
 
 ## Website download link
 

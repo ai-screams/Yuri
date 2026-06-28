@@ -18,6 +18,9 @@ enum CommandEngineTests {
         testRelativeHalves()
         testSnapHalves()
         testDisplayMove()
+        testFixedAndMinWidthSnap()
+        testCenterClamp()
+        testAnchorOrigin()
         testCommandModel()
         testCommandIdentifiers()
 
@@ -40,6 +43,14 @@ enum CommandEngineTests {
         let same = approx(got.minX, want.minX) && approx(got.minY, want.minY)
             && approx(got.width, want.width) && approx(got.height, want.height)
         if !same {
+            failures += 1
+            print("FAIL \(label): got \(got) want \(want)")
+        }
+    }
+
+    private static func expectPoint(_ label: String, _ got: CGPoint, _ want: CGPoint) {
+        checks += 1
+        if !(approx(got.x, want.x) && approx(got.y, want.y)) {
             failures += 1
             print("FAIL \(label): got \(got) want \(want)")
         }
@@ -170,6 +181,61 @@ enum CommandEngineTests {
 
     private static func display(_ rect: CGRect, _ from: CGRect, _ to: CGRect) -> CGRect {
         FrameCalculator.displayMoveRect(rect, from: from, to: to)
+    }
+
+    // 고정폭·최소폭 앱이 좌/우 대칭으로 "스냅됨"으로 판정돼 throw 가능한지(B1/B2/B3).
+    private static func testFixedAndMinWidthSnap() {
+        let fixedLeft = CGRect(x: 0, y: 25, width: 800, height: 1055) // 절반(960)보다 좁은 고정폭, 좌측 붙음
+        expectName("fixed-width flush-left fills left (B2)",
+                   "\(FrameCalculator.fillsHalf(fixedLeft, edge: .left, workArea: workArea))", "true")
+        let fixedRight = CGRect(x: 1120, y: 25, width: 800, height: 1055) // 같은 고정폭, 우측 붙음
+        expectName("fixed-width flush-right fills right (B1 대칭)",
+                   "\(FrameCalculator.fillsHalf(fixedRight, edge: .right, workArea: workArea))", "true")
+        let minLeft = CGRect(x: 0, y: 25, width: 1100, height: 1055) // 절반보다 넓은 최소폭, 좌측 붙음
+        expectName("min-width flush-left fills left (B3)",
+                   "\(FrameCalculator.fillsHalf(minLeft, edge: .left, workArea: workArea))", "true")
+        let floating = CGRect(x: 810, y: 400, width: 300, height: 300) // 어느 쪽에도 안 붙은 소형창
+        expectName("floating small window fills neither (left)",
+                   "\(FrameCalculator.fillsHalf(floating, edge: .left, workArea: workArea))", "false")
+        expectName("floating small window fills neither (right)",
+                   "\(FrameCalculator.fillsHalf(floating, edge: .right, workArea: workArea))", "false")
+        // 좌측 모서리에 닿았지만 키가 작은 부유창은 "스냅됨"이 아니다(수직 커버리지<0.5 → 스냅, throw 아님).
+        let shortNearLeft = CGRect(x: 10, y: 400, width: 500, height: 300)
+        expectName("short edge-touching window is not snapped",
+                   "\(FrameCalculator.fillsHalf(shortNearLeft, edge: .left, workArea: workArea))", "false")
+        expectName("maximized does not fill left (both edges flush)",
+                   "\(FrameCalculator.fillsHalf(workArea, edge: .left, workArea: workArea))", "false")
+    }
+
+    // 작업영역보다 큰 창의 move(.center)가 음수 origin(화면 밖)으로 가지 않고 좌상단에 핀(B4).
+    private static func testCenterClamp() {
+        expect("oversize center pins to top-left, not negative",
+               target(.move(.center), CGRect(x: 50, y: 40, width: 2000, height: 1200)),
+               CGRect(x: 0, y: 25, width: 2000, height: 1200))
+    }
+
+    // 제약 앱이 목표 크기에 못 미칠 때 스냅 모서리를 유지하는 anchored origin.
+    private static func testAnchorOrigin() {
+        let rightHalf = FrameCalculator.halfRect(.right, workArea: workArea)
+        expectPoint("anchor right-half to actual width keeps right edge",
+                    FrameCalculator.anchorOrigin(actualSize: CGSize(width: 1100, height: 1055),
+                                                 requested: rightHalf, workArea: workArea),
+                    CGPoint(x: 820, y: 25))
+        let bottomHalf = FrameCalculator.halfRect(.bottom, workArea: workArea)
+        expectPoint("anchor bottom-half to actual height keeps bottom edge",
+                    FrameCalculator.anchorOrigin(actualSize: CGSize(width: 1920, height: 700),
+                                                 requested: bottomHalf, workArea: workArea),
+                    CGPoint(x: 0, y: 380))
+        let leftHalf = FrameCalculator.halfRect(.left, workArea: workArea)
+        expectPoint("anchor left-half keeps left edge (no shift)",
+                    FrameCalculator.anchorOrigin(actualSize: CGSize(width: 1100, height: 1055),
+                                                 requested: leftHalf, workArea: workArea),
+                    CGPoint(x: 0, y: 25))
+        // 앱 최소폭이 작업영역보다 큰 퇴화 케이스: 음수 origin이 아니라 좌상단으로 클램프.
+        expectPoint("anchor clamps oversize min-width to on-screen origin",
+                    FrameCalculator.anchorOrigin(actualSize: CGSize(width: 2000, height: 1055),
+                                                 requested: rightHalf, workArea: workArea),
+                    CGPoint(x: 0, y: 25))
     }
 
     private static func testCommandModel() {

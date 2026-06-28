@@ -7,11 +7,10 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
   schedule:
     - cron: "0 9 * * 1" # 매주 월요일 09:00 UTC 정기 스캔
+  # PR 트리거 제외: Swift 분석이 ~15분이라 PR 피드백을 느리게 한다. PR은 ci.yml(lint/build/
+  # test/coverage/secret)로 빠르게 검증하고, CodeQL은 main 머지 직후와 주간으로 잡는다.
 
 permissions:
   contents: read
@@ -20,7 +19,7 @@ permissions:
 
 concurrency:
   group: codeql-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: false # main 분석은 취소하지 않는다(PR 트리거 없음)
 
 jobs:
   analyze:

@@ -80,8 +80,5 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build
 
-      - name: Command-engine tests
-        run: ./scripts/test.sh
-
-      - name: Coverage gate (pure logic >= 90%)
-        run: make coverage
+      - name: Tests + coverage gate (pure logic >= 90%)
+        run: make coverage # 테스트 실행 + 순수 로직 라인 ≥ 90% 게이트(중복 test 스텝 제거)

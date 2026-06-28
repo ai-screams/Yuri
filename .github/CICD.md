@@ -16,11 +16,11 @@ Azimuth의 지속적 통합·배포 구성 전체 개요. 워크플로 정의는
 | 잡 | 단계 |
 |---|---|
 | **secret-scan** | gitleaks 전체 히스토리 스캔(`gitleaks git`, fetch-depth 0) → SARIF를 Code Scanning에 업로드 → 누출 시 실패 |
-| **lint-and-build** | Select Xcode(latest-stable) → SwiftFormat `--lint` → SwiftLint `--strict` → `xcodebuild ... CODE_SIGNING_ALLOWED=NO build` → `scripts/test.sh` → **`make coverage`(순수 로직 라인 ≥ 90% 게이트)** |
+| **lint-and-build** | Select Xcode(latest-stable) → SwiftFormat `--lint` → SwiftLint `--strict` → `xcodebuild ... CODE_SIGNING_ALLOWED=NO build` → **`make coverage`**(테스트 실행 + 순수 로직 라인 ≥ 90% 게이트) |
 
 > CI 빌드는 ad-hoc(`CODE_SIGNING_ALLOWED=NO`) — 컴파일 검증용. 권한(AX) 동작은 CI에서 검증 불가(로컬 `make run` 서명 빌드).
 
-### 2. `codeql.yml` — 정적 분석 SAST (push: main, PR, 주간 cron)
+### 2. `codeql.yml` — 정적 분석 SAST (push: main, 주간 cron)
 러너 `macos-15`. CodeQL **Swift** 분석: init → `xcodebuild build`(컴파일 언어라 빌드 관찰 필요) → analyze. 결과는 **Security → Code scanning** 탭. 권한 `security-events: write`(최소).
 
 ### 3. `release.yml` — 릴리스 (태그 `v*` 푸시)
@@ -37,7 +37,7 @@ Azimuth의 지속적 통합·배포 구성 전체 개요. 워크플로 정의는
 | 시크릿 | gitleaks(staged) | gitleaks(전체 히스토리)+SARIF | — | Gitleaks GitHub App, (선택)GitHub native secret scanning |
 | 포맷/린트 | SwiftFormat+SwiftLint | SwiftFormat+SwiftLint(strict) | — | — |
 | 빌드 | — | xcodebuild | release.sh archive | — |
-| 테스트 | — | `scripts/test.sh` | — | — |
+| 테스트 | — | `make coverage`(테스트 실행) | — | — |
 | 커버리지 | (`make coverage` 수동) | **≥ 90% 게이트** | — | — |
 | 코드 취약점 | — | — | — | **CodeQL(주간+PR)** |
 | 서명/공증 | — | — | **자가검증+staple** | — |
@@ -53,7 +53,7 @@ Azimuth의 지속적 통합·배포 구성 전체 개요. 워크플로 정의는
 - 러너 `macos-15` 고정(재현성). Xcode는 `setup-xcode`로 latest-stable.
 
 ## 활성화에 필요한 저장소 설정 (코드 아님 — 관리자 수행)
-1. **브랜치 보호**(Settings → Branches → `main`): 직접 푸시 금지, PR 필수, 필수 상태 체크(`lint-and-build`, `secret-scan`, `Analyze (swift)`) 통과 강제, (선택)리뷰 1+·linear history.
+1. **브랜치 보호**(Settings → Branches → `main`): 직접 푸시 금지, PR 필수, 필수 상태 체크(`lint-and-build`, `secret-scan`) 통과 강제, (선택)리뷰 1+·linear history. (CodeQL은 PR이 아닌 main 머지 후·주간 실행이라 PR 필수 체크에 넣지 않는다.)
 2. **`release` 환경**(Settings → Environments): required reviewer + 환경 scoped secret 5개(`DEVELOPER_ID_CERT_P12`, `DEVELOPER_ID_CERT_PASSWORD`, `APPLE_TEAM_ID`, `APPLE_ID`, `APPLE_APP_PASSWORD`).
 3. (선택) **Tags 보호**(`v*`), **GitHub native Secret scanning + Push protection** 토글.
 

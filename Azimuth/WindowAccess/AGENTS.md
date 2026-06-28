@@ -12,7 +12,7 @@ Accessibility(AX) API와 직접 맞닿는 계층. "어느 앱/어느 창"을 해
 | `FrontmostAppTracker.swift` | `@MainActor`. 직전 non-Azimuth 활성 앱 추적(`didActivateApplication` 옵저버). `targetApplication`으로 "명령 대상 앱" 정책을 한 곳에 모음 |
 | `FocusedWindowResolver.swift` | `@MainActor`. 대상 앱의 `kAXFocusedWindowAttribute`를 `ResolvedWindow`로 해석. 권한·풀스크린(비공개 `AXFullScreen`)·최소화·subrole(`kAXStandardWindowSubrole`) 가드. AX 오류를 `WindowResolutionError`로 매핑 |
 | `AXAttribute.swift` | `nonisolated`. `AXUIElementCopyAttributeValue` 얇은 래퍼(string/bool/element/point/size). 유일하게 범위 한정 force-cast 허용(`swiftlint:disable` 주석) |
-| `WindowFrameWriter.swift` | `nonisolated`. AX position/size 쓰기. 권한·settable 가드, 최소 크기 제약 대응 위해 position 재적용, 적용 후 실제 frame 회신 |
+| `WindowFrameWriter.swift` | `@MainActor`. AX position/size 쓰기. 권한·settable 가드, 애니메이션 억제(대상 앱의 `AXEnhancedUserInterface`/`AXManualAccessibility` 끄기 — VoiceOver 게이트·PID별 지연 복원), shrink일 때 size→position 순서, 제약 앱은 실제 크기로 anchored origin을 1회만 쓰기 + verify·1회 재시도, 적용 후 실제 frame 회신 |
 | `WindowUndoStore.swift` | `@MainActor`. 창별 1단계 직전 frame 저장(capacity 64, LRU). `AXUIElement`를 `CFEqual`/`CFHash`로 식별, pid 일치 확인(닫힌 창 element 재사용 오인 방지). `clearAll`은 디스플레이 재구성 시 호출 |
 | `WorkAreaResolver.swift` | `@MainActor`. AX 창 frame이 가장 많이 겹치는 화면의 `visibleFrame`을 AX 좌표로 반환(멀티모니터 대응) |
 
@@ -28,7 +28,7 @@ Accessibility(AX) API와 직접 맞닿는 계층. "어느 앱/어느 창"을 해
 
 ### Common Patterns
 - `Result<_, WindowResolutionError>` / `Result<CGRect, WindowCommandError>`로 실패 사유를 구체화.
-- `ResolvedWindow`(element/subrole/pid/frame)가 해석 결과의 단일 캐리어.
+- `ResolvedWindow`(element/appElement/subrole/pid/frame)가 해석 결과의 단일 캐리어. `appElement`는 writer가 애니메이션 억제에 쓴다.
 
 ## Dependencies
 

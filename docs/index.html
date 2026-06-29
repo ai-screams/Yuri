@@ -6,6 +6,41 @@
   <meta name="description" content="Azimuth — A keyboard-driven window manager for macOS. Predictability over clever inference." />
   <title>Azimuth — macOS Window Manager</title>
 
+  <link rel="canonical" href="https://ai-screams.github.io/Azimuth/" />
+  <meta name="theme-color" content="#1a2a4a" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+
+  <!-- Open Graph / Twitter Card — rich link previews when shared -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Azimuth" />
+  <meta property="og:title" content="Azimuth — macOS Window Manager" />
+  <meta property="og:description" content="A keyboard-driven window manager for macOS. Predictability over clever inference." />
+  <meta property="og:url" content="https://ai-screams.github.io/Azimuth/" />
+  <meta property="og:image" content="https://ai-screams.github.io/Azimuth/assets/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Azimuth — macOS Window Manager" />
+  <meta name="twitter:description" content="A keyboard-driven window manager for macOS. Predictability over clever inference." />
+  <meta name="twitter:image" content="https://ai-screams.github.io/Azimuth/assets/og-image.png" />
+
+  <!-- SEO: structured data (no hardcoded version — download resolves via /releases/latest) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Azimuth",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "macOS 26.3+",
+    "description": "A keyboard-driven window manager for macOS. Predictability over clever inference.",
+    "url": "https://ai-screams.github.io/Azimuth/",
+    "downloadUrl": "https://github.com/ai-screams/Azimuth/releases/latest",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+
   <style>
     /* ─── Design tokens ──────────────────────────────────────────── */
     :root {
@@ -1251,6 +1286,51 @@
 
     <div class="divider"></div>
 
+    <!-- ── 2.5 See it in action (screenshots / GIF) ──────────────────
+         REPLACE the placeholder images in docs/assets/ with real captures:
+           • demo-snap.png  — a window snapping to a half/third (before → after)
+           • demo-throw.png — snap-throw to the adjacent display, or relative 2/3
+         Recommended ~1600×1000, PNG (or an animated GIF / looping .mp4).
+         Keep the same filenames and this section renders them automatically. -->
+    <section id="screenshots" aria-labelledby="screenshots-heading">
+      <div class="container">
+        <span class="section-label"
+              data-en="In action" data-ko="실제 동작">In action</span>
+        <h2 class="section-title" id="screenshots-heading"
+            data-en="See it in action"
+            data-ko="동작 화면">
+          See it in action
+        </h2>
+        <p class="section-sub"
+           data-en="Predictable placement and snap-throw across displays — keyboard only, no mouse."
+           data-ko="예측 가능한 배치와 디스플레이 간 스냅-throw — 키보드만으로, 마우스 없이.">
+          Predictable placement and snap-throw across displays — keyboard only, no mouse.
+        </p>
+        <div style="display:grid; gap:1.25rem; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); margin-top:2rem;">
+          <figure style="margin:0;">
+            <img src="assets/demo-snap.png" alt="Azimuth snapping a window to a screen region"
+                 width="1600" height="1000" loading="lazy"
+                 style="width:100%; height:auto; border-radius:12px; border:1px solid rgba(255,255,255,0.12);" />
+            <figcaption style="margin-top:.5rem; font-size:.9rem; opacity:.7;"
+                        data-en="Snap & resize with one shortcut" data-ko="단축키 하나로 스냅·리사이즈">
+              Snap &amp; resize with one shortcut
+            </figcaption>
+          </figure>
+          <figure style="margin:0;">
+            <img src="assets/demo-throw.png" alt="Azimuth throwing a window to the adjacent display"
+                 width="1600" height="1000" loading="lazy"
+                 style="width:100%; height:auto; border-radius:12px; border:1px solid rgba(255,255,255,0.12);" />
+            <figcaption style="margin-top:.5rem; font-size:.9rem; opacity:.7;"
+                        data-en="Throw across displays, keep the shape" data-ko="디스플레이 간 이동, 모양 유지">
+              Throw across displays, keep the shape
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
     <!-- ── 3. Shortcuts ───────────────────────────────────────── -->
     <section id="shortcuts" aria-labelledby="shortcuts-heading">
       <div class="container">
@@ -1823,6 +1903,19 @@
       applyLang(currentLang);
     })();
   </script>
+
+  <!-- ── Privacy-friendly analytics (GoatCounter) ────────────────────────────
+       Cookieless, no personal data, no cross-site tracking → no consent banner
+       needed (does not contradict the app's zero-telemetry stance; this measures
+       only the website). DISABLED until you opt in:
+         1. Create a free site at https://www.goatcounter.com (free for non-commercial).
+         2. Replace YOURCODE below with your site code.
+         3. Uncomment the <script> line to enable. Delete this block to keep analytics off.
+       Alternative: Plausible (paid/self-host). Do NOT use Google Analytics (tracking
+       cookies + contradicts Azimuth's privacy positioning).
+  <script data-goatcounter="https://YOURCODE.goatcounter.com/count"
+          async src="//gc.zgo.at/count.js"></script>
+  -->
 
 </body>
 </html>

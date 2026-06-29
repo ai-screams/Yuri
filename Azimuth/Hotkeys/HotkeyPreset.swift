@@ -107,15 +107,15 @@ nonisolated enum HotkeyPreset: String, CaseIterable {
         ]
     }
 
-    /// 상대 2/3 축소: ⌃⌥⇧ + 7/8/9/0 (left/right/top/bottom). 절대 2/3가 ⌃⌥+7/8/9/0이라
-    /// ⇧를 더한 같은 숫자열로 니모닉을 맞추고, relativeHalf(⌃⌥⇧+방향키)와 충돌하지 않는다.
-    /// 숫자 키라 Standard·Vim 두 프리셋에서 동일하다.
+    /// 상대 2/3 축소: ⌃⌥⇧ + M / , / . / / (left/right/top/bottom). 키보드 바닥줄 오른쪽의
+    /// 연속 4키(M , . /)로 화살표 바로 옆에 모아 손 이동을 줄였다. relativeHalf(⌃⌥⇧+방향키)와
+    /// 충돌하지 않고, 어느 프리셋도 M/,/./ 를 쓰지 않으므로 Standard·Vim 동일하다.
     private func relativeTwoThirdBindings(relMods: UInt32) -> [HotkeyBinding] {
         [
-            HotkeyBinding(command: .relativeTwoThird(.left), keyCode: 0x1A, modifiers: relMods),
-            HotkeyBinding(command: .relativeTwoThird(.right), keyCode: 0x1C, modifiers: relMods),
-            HotkeyBinding(command: .relativeTwoThird(.top), keyCode: 0x19, modifiers: relMods),
-            HotkeyBinding(command: .relativeTwoThird(.bottom), keyCode: 0x1D, modifiers: relMods)
+            HotkeyBinding(command: .relativeTwoThird(.left), keyCode: 0x2E, modifiers: relMods),
+            HotkeyBinding(command: .relativeTwoThird(.right), keyCode: 0x2B, modifiers: relMods),
+            HotkeyBinding(command: .relativeTwoThird(.top), keyCode: 0x2F, modifiers: relMods),
+            HotkeyBinding(command: .relativeTwoThird(.bottom), keyCode: 0x2C, modifiers: relMods)
         ]
     }
 

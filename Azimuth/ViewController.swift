@@ -27,6 +27,8 @@ final class ViewController: NSViewController {
     private let registrationFailures: () -> Set<String>
     private let setHotkeysSuspended: (Bool) -> Void
     let setMenuBarIconHidden: (Bool) -> Void
+    /// "Check for Updates…" 버튼 액션. Sparkle 업데이터를 모르도록(결합 회피) 클로저로 받는다.
+    let checkForUpdates: () -> Void
 
     init(
         preferencesStore: PreferencesStore,
@@ -34,7 +36,8 @@ final class ViewController: NSViewController {
         onHotkeysChanged: @escaping () -> Void,
         registrationFailures: @escaping () -> Set<String>,
         setHotkeysSuspended: @escaping (Bool) -> Void,
-        setMenuBarIconHidden: @escaping (Bool) -> Void
+        setMenuBarIconHidden: @escaping (Bool) -> Void,
+        checkForUpdates: @escaping () -> Void
     ) {
         self.preferencesStore = preferencesStore
         self.launchService = launchService
@@ -42,6 +45,7 @@ final class ViewController: NSViewController {
         self.registrationFailures = registrationFailures
         self.setHotkeysSuspended = setHotkeysSuspended
         self.setMenuBarIconHidden = setMenuBarIconHidden
+        self.checkForUpdates = checkForUpdates
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -77,6 +81,9 @@ final class ViewController: NSViewController {
         wrappingLabelWithString: "When hidden, relaunch Azimuth to reopen this settings window."
     )
 
+    let versionLabel = NSTextField(labelWithString: "")
+    lazy var checkForUpdatesButton = makeCheckForUpdatesButton()
+
     lazy var permissionsSection = SettingsCard.make(
         symbolName: "lock.shield",
         title: "Permissions",
@@ -98,6 +105,11 @@ final class ViewController: NSViewController {
             menuBarIconButton,
             menuBarIconHintLabel
         ]
+    )
+    lazy var updatesSection = SettingsCard.make(
+        symbolName: "arrow.triangle.2.circlepath",
+        title: "Updates",
+        bodyViews: [versionLabel, checkForUpdatesButton]
     )
     lazy var contentStackView = makeContentStackView()
 

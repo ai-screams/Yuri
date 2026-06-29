@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<key>LSUIElement</key>
+	<string>$(AZIMUTH_LSUIELEMENT)</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2026 ai-screams</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>NSSupportsAutomaticTermination</key>
+	<true/>
+	<key>NSSupportsSuddenTermination</key>
+	<true/>
+	<!-- Sparkle auto-update. Private EdDSA key lives in the maintainer's Keychain
+	     (and as a CI secret); only the public key is shipped here. The feed is the
+	     appcast attached to the latest GitHub Release (stable redirect URL). -->
+	<key>SUFeedURL</key>
+	<string>https://github.com/ai-screams/Azimuth/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>2Rv8vmLnfXnSdHryGxje/imXgjU3e+rn00JrbESJeAg=</string>
+</dict>
+</plist>

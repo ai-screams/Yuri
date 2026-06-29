@@ -4,6 +4,9 @@ import os
 @MainActor
 final class StatusBarController: NSObject, NSMenuDelegate {
     var onOpenSettings: (() -> Void)?
+    /// Sparkle 업데이터의 (타깃, 셀렉터). install() 전에 설정하면 메뉴에 "Check for Updates…"가 추가된다.
+    /// Sparkle import를 StatusBarController로 끌어오지 않으려고 제네릭 타깃/셀렉터로 받는다.
+    var checkForUpdates: (target: AnyObject, action: Selector)?
 
     private var statusItem: NSStatusItem?
     private let permissionStatusMenuItem = NSMenuItem()
@@ -120,6 +123,16 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         )
         settingsItem.target = self
         menu.addItem(settingsItem)
+
+        if let checkForUpdates {
+            let updatesItem = NSMenuItem(
+                title: "Check for Updates…",
+                action: checkForUpdates.action,
+                keyEquivalent: ""
+            )
+            updatesItem.target = checkForUpdates.target
+            menu.addItem(updatesItem)
+        }
 
         menu.addItem(.separator())
 

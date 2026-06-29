@@ -6,26 +6,20 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		5A0000000000000000000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 5A0000000000000000000002 /* Sparkle */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		681C33E02F7ACA7800C6B786 /* Azimuth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Azimuth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		681C33E22F7ACA7800C6B786 /* Azimuth */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				AABBCCDD0011223344556677 /* Exceptions for "Azimuth" folder in "Azimuth" target */,
-			);
-			path = Azimuth;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		AABBCCDD0011223344556677 /* Exceptions for "Azimuth" folder in "Azimuth" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				AGENTS.md,
+				Info.plist,
 				Commands/AGENTS.md,
 				Hotkeys/AGENTS.md,
 				Launch/AGENTS.md,
@@ -40,11 +34,23 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		681C33E22F7ACA7800C6B786 /* Azimuth */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AABBCCDD0011223344556677 /* Exceptions for "Azimuth" folder in "Azimuth" target */,
+			);
+			path = Azimuth;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		681C33DD2F7ACA7800C6B786 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A0000000000000000000001 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +94,7 @@
 			);
 			name = Azimuth;
 			packageProductDependencies = (
+				5A0000000000000000000002 /* Sparkle */,
 			);
 			productName = Azimuth;
 			productReference = 681C33E02F7ACA7800C6B786 /* Azimuth.app */;
@@ -117,6 +124,9 @@
 			);
 			mainGroup = 681C33D72F7ACA7800C6B786;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5A0000000000000000000003 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 681C33E12F7ACA7800C6B786 /* Products */;
 			projectDirPath = "";
@@ -300,11 +310,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7K6MK3KP9K;
 				ENABLE_APP_SANDBOX = NO;
+				AZIMUTH_LSUIELEMENT = 0;
 				EXCLUDED_SOURCE_FILE_NAMES = "*.md";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSUIElement = NO;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 ai-screams";
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Azimuth/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -332,11 +341,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7K6MK3KP9K;
 				ENABLE_APP_SANDBOX = NO;
+				AZIMUTH_LSUIELEMENT = 1;
 				EXCLUDED_SOURCE_FILE_NAMES = "*.md";
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 ai-screams";
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Azimuth/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -376,6 +384,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		5A0000000000000000000003 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5A0000000000000000000002 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5A0000000000000000000003 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 681C33D82F7ACA7800C6B786 /* Project object */;
 }

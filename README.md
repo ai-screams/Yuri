@@ -44,6 +44,14 @@ Azimuth runs entirely on your Mac. It collects no data, has no telemetry or anal
 
 The build is Developer ID–signed and notarized, so it opens without Gatekeeper warnings.
 
+### Homebrew
+
+```bash
+brew install --cask ai-screams/tap/azimuth
+```
+
+Then enable **Azimuth** in **System Settings → Privacy & Security → Accessibility**. Updates are handled in-app (Sparkle), so `brew upgrade` won't fight the built-in updater.
+
 ### Build from source
 
 ```bash

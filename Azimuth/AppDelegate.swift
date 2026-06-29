@@ -7,9 +7,18 @@
 
 import Cocoa
 import os
+import Sparkle
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// Sparkle 자동 업데이트. startingUpdater: true로 즉시 시작 → 피드(appcast)를 주기적으로
+    /// 확인한다. 자동 확인 동의는 Sparkle 표준 동작(둘째 실행 시 프롬프트)에 맡긴다.
+    /// "Check for Updates…" 메뉴 항목의 타깃이 된다(canCheckForUpdates에 따라 자동 활성화).
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
     private let frontmostAppTracker = FrontmostAppTracker()
     private let windowUndoStore = WindowUndoStore()
     private let hotkeyService = HotkeyService()
@@ -38,12 +47,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             actions: .init(
                 target: self,
                 about: #selector(showAboutPanel(_:)),
-                settings: #selector(openSettings(_:))
+                settings: #selector(openSettings(_:)),
+                checkForUpdatesTarget: updaterController,
+                checkForUpdates: #selector(SPUStandardUpdaterController.checkForUpdates(_:))
             )
         )
         statusBarController.onOpenSettings = { [weak self] in
             self?.settingsWindowController.show()
         }
+        statusBarController.checkForUpdates = (
+            target: updaterController,
+            action: #selector(SPUStandardUpdaterController.checkForUpdates(_:))
+        )
         statusBarController.install()
         statusBarController.setVisible(!preferencesStore.menuBarIconHidden)
         reloadHotkeys()

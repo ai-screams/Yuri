@@ -15,10 +15,14 @@ import AppKit
 
 enum MainMenuBuilder {
     /// App 메뉴의 커스텀 항목(About·Settings) 액션 묶음. 둘 다 같은 타깃(보통 AppDelegate)을 쓴다.
+    /// "Check for Updates…"만 별도 타깃(Sparkle 업데이터 컨트롤러)을 받는다 — MainMenuBuilder는
+    /// AppKit만 알면 되도록 타깃/셀렉터를 제네릭으로 전달받는다.
     struct AppMenuActions {
         let target: AnyObject
         let about: Selector
         let settings: Selector
+        let checkForUpdatesTarget: AnyObject
+        let checkForUpdates: Selector
     }
 
     /// 표준 App·Edit·Window 메뉴를 가진 메인 메뉴를 만든다.
@@ -46,6 +50,15 @@ enum MainMenuBuilder {
         let menu = NSMenu(title: appName)
         let about = menu.addItem(withTitle: "About \(appName)", action: actions.about, keyEquivalent: "")
         about.target = actions.target
+        menu.addItem(.separator())
+        // "Check for Updates…"는 Sparkle 업데이터 컨트롤러가 타깃이며, canCheckForUpdates에
+        // 따라 자동 활성/비활성된다(target/action 연결만으로 동작).
+        let checkUpdates = menu.addItem(
+            withTitle: "Check for Updates…",
+            action: actions.checkForUpdates,
+            keyEquivalent: ""
+        )
+        checkUpdates.target = actions.checkForUpdatesTarget
         menu.addItem(.separator())
         let settings = menu.addItem(withTitle: "Settings…", action: actions.settings, keyEquivalent: ",")
         settings.target = actions.target

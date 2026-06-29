@@ -17,6 +17,7 @@ enum CommandEngineTests {
         testMoves()
         testRelativeHalves()
         testRelativeTwoThirds()
+        testRelativeShrinkFloor()
         testSnapHalves()
         testDisplayMove()
         testFixedAndMinWidthSnap()
@@ -153,6 +154,20 @@ enum CommandEngineTests {
         frame = target(.relativeTwoThird(.left), frame)
         frame = target(.relativeHalf(.left), frame)
         expect("2/3 then 1/2 composes to 1/3 width", frame, CGRect(x: 0, y: 25, width: 300, height: 1055))
+    }
+
+    private static func testRelativeShrinkFloor() {
+        // 한 변 하한 100pt: 그 아래로는 줄어들지 않는다(반복 축소가 0으로 수렴하는 것 방지).
+        expect("relative half floors width at 100 (not 60)", target(.relativeHalf(.left), CGRect(x: 0, y: 25, width: 120, height: 400)),
+               CGRect(x: 0, y: 25, width: 100, height: 400))
+        expect("relative 2/3 floors height at 100", target(.relativeTwoThird(.top), CGRect(x: 0, y: 25, width: 400, height: 120)),
+               CGRect(x: 0, y: 25, width: 400, height: 100))
+        // 이미 하한보다 작은 창은 그대로(확대 안 함).
+        expect("already-below-floor window is unchanged", target(.relativeHalf(.left), CGRect(x: 0, y: 25, width: 80, height: 400)),
+               CGRect(x: 0, y: 25, width: 80, height: 400))
+        // 우측 앵커 + 하한: 오른쪽 모서리 고정 유지.
+        expect("right anchor keeps right edge with floor", target(.relativeTwoThird(.right), CGRect(x: 0, y: 25, width: 120, height: 400)),
+               CGRect(x: 20, y: 25, width: 100, height: 400))
     }
 
     private static func testSnapHalves() {

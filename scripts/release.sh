@@ -52,7 +52,13 @@ fi
 VERSION="${VERSION#v}"  # 앞의 v 제거
 DMG="$DIST_DIR/$APP_NAME-$VERSION.dmg"
 
-print "▸ Azimuth $VERSION 배포본 빌드 (team=$DEVELOPMENT_TEAM, id='$DEVELOPER_ID_IDENTITY')"
+# CFBundleVersion(=CURRENT_PROJECT_VERSION)은 Sparkle이 "더 최신인가"를 비교하는 값이라
+# 반드시 단조 증가해야 한다. SemVer 문자열($VERSION)을 그대로 쓰면 -rc/-dev 태그서 비교가
+# 꼬일 수 있으므로, git 커밋 수(단조 증가 정수)를 빌드번호로 쓴다. 표시용 MARKETING_VERSION은
+# 태그의 SemVer를 유지(CFBundleShortVersionString). CI 체크아웃은 fetch-depth: 0이어야 정확.
+BUILD_NUMBER="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
+
+print "▸ Azimuth $VERSION (build $BUILD_NUMBER) 배포본 빌드 (team=$DEVELOPMENT_TEAM, id='$DEVELOPER_ID_IDENTITY')"
 
 rm -rf "$BUILD_DIR" "$DIST_DIR"
 mkdir -p "$BUILD_DIR" "$DIST_DIR"
@@ -67,7 +73,7 @@ xcodebuild archive \
     -archivePath "$ARCHIVE" \
     DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
     MARKETING_VERSION="$VERSION" \
-    CURRENT_PROJECT_VERSION="$VERSION" \
+    CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
     CODE_SIGN_STYLE=Manual \
     CODE_SIGN_IDENTITY="$DEVELOPER_ID_IDENTITY" \
     ENABLE_HARDENED_RUNTIME=YES \

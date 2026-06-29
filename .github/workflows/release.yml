@@ -26,6 +26,8 @@ jobs:
     environment: release # 배포 승인 게이트(필수 리뷰어는 저장소 Environments 설정에서 지정).
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0 # CFBundleVersion = git 커밋 수(단조 증가)라 전체 히스토리 필요(shallow면 1)
 
       - name: Select Xcode
         uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
@@ -65,25 +67,45 @@ jobs:
           for f in *.dmg; do shasum -a 256 "$f" > "$f.sha256"; done
           cat ./*.sha256
 
-      # Sparkle 자동 업데이트 피드. DMG를 EdDSA 개인키(release 환경 secret)로 서명하고
-      # appcast.xml을 생성한다. enclosure URL은 이 릴리스의 자산 다운로드 경로로 지정.
-      # 피드는 release 자산으로 올라가며, 앱은 releases/latest/download/appcast.xml(고정 URL)로 받는다.
+      # 게이트: 앱에 박힌 공개키(SUPublicEDKey)가 서명 개인키(secret)와 짝이 맞는지 확인.
+      # 불일치 시 "설치는 되나 업데이트는 모든 클라이언트가 거부"가 조용히 출고되므로, 여기서 실패시킨다.
+      # 개인키는 디스크에 쓰지 않고(env→격리 venv의 python으로 stdin 없이 메모리에서) 공개키만 유도해 비교.
+      - name: Verify update-signing key matches embedded public key
+        env:
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          APP_PUB="$(/usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' build/export/Azimuth.app/Contents/Info.plist)"
+          python3 -m venv "$RUNNER_TEMP/edvenv"
+          "$RUNNER_TEMP/edvenv/bin/pip" install --quiet cryptography
+          DERIVED_PUB="$("$RUNNER_TEMP/edvenv/bin/python" -c 'import os,base64;from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey as K;from cryptography.hazmat.primitives import serialization as S;s=base64.b64decode(os.environ["SPARKLE_ED_PRIVATE_KEY"]);s=s[:32] if len(s)==64 else s;print(base64.b64encode(K.from_private_bytes(s).public_key().public_bytes(S.Encoding.Raw,S.PublicFormat.Raw)).decode())')"
+          rm -rf "$RUNNER_TEMP/edvenv"
+          if [ "$APP_PUB" != "$DERIVED_PUB" ]; then
+            echo "::error::SUPublicEDKey in app ($APP_PUB) != key derived from SPARKLE_ED_PRIVATE_KEY ($DERIVED_PUB). Clients would reject every update."
+            exit 1
+          fi
+          echo "✅ Signing key matches embedded SUPublicEDKey ($APP_PUB)."
+
+      # Sparkle 자동 업데이트 피드. DMG를 EdDSA 개인키(release 환경 secret)로 서명하고 appcast.xml 생성.
+      # 도구(generate_appcast)는 SPM이 Package.resolved에 핀해 체크섬 검증으로 받아둔 Sparkle 아티팩트에서
+      # 가져온다 — 별도 tarball 다운로드(미검증)를 없애 서명키 옆에서 도는 코드의 공급망 위험을 제거.
+      # 피드는 단일 항목(최신 1건)이며 releases/latest/download/appcast.xml(고정 URL)로 서빙 → "항상 최신 제공" 모델.
       - name: Generate signed Sparkle appcast
         env:
           SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
         run: |
           set -euo pipefail
-          SPARKLE_VERSION=2.9.3
-          curl -fsSL "https://github.com/sparkle-project/Sparkle/releases/download/${SPARKLE_VERSION}/Sparkle-${SPARKLE_VERSION}.tar.xz" -o /tmp/sparkle.tar.xz
-          mkdir -p /tmp/sparkle && tar -xJf /tmp/sparkle.tar.xz -C /tmp/sparkle
-          GEN="$(find /tmp/sparkle -type f -name generate_appcast | head -1)"
-          [ -n "$GEN" ] || { echo "generate_appcast not found in Sparkle tools"; exit 1; }
+          xcodebuild -resolvePackageDependencies \
+            -project ./Azimuth.xcodeproj -scheme Azimuth \
+            -derivedDataPath "$RUNNER_TEMP/spm" >/dev/null
+          GEN="$(find "$RUNNER_TEMP/spm/SourcePackages/artifacts" -type f -name generate_appcast | head -1)"
+          [ -n "$GEN" ] || { echo "generate_appcast not found in SPM-resolved Sparkle artifact"; exit 1; }
           printf '%s' "$SPARKLE_ED_PRIVATE_KEY" | "$GEN" \
             --ed-key-file - \
             --download-url-prefix "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/" \
             -o dist/appcast.xml \
             dist/
-          echo "── appcast.xml ──"; cat dist/appcast.xml
+          echo "appcast.xml generated ($(wc -l < dist/appcast.xml) lines)."
 
       - name: Create GitHub Release with DMG
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3

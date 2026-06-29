@@ -66,6 +66,19 @@ extension ViewController {
         menuBarIconHintLabel.textColor = .secondaryLabelColor
         menuBarIconHintLabel.font = .systemFont(ofSize: Layout.statusFontSize)
         menuBarIconHintLabel.maximumNumberOfLines = 0
+
+        versionLabel.textColor = .secondaryLabelColor
+        versionLabel.font = .systemFont(ofSize: Layout.statusFontSize)
+        versionLabel.stringValue = bundleVersionString()
+    }
+
+    /// 번들에서 표시 버전을 읽는다(About 창과 동일 규칙). build가 short와 다르면 괄호로 덧붙인다.
+    private func bundleVersionString() -> String {
+        let info = Bundle.main.infoDictionary
+        let short = info?["CFBundleShortVersionString"] as? String ?? "—"
+        let build = info?["CFBundleVersion"] as? String ?? ""
+        if build.isEmpty || build == short { return "Azimuth \(short)" }
+        return "Azimuth \(short) (\(build))"
     }
 
     func makeContentStackView() -> NSStackView {
@@ -74,7 +87,8 @@ extension ViewController {
             subtitleLabel,
             permissionsSection,
             shortcutsSection,
-            behaviorSection
+            behaviorSection,
+            updatesSection
         ])
         stackView.alignment = .leading
         stackView.orientation = .vertical
@@ -129,5 +143,9 @@ extension ViewController {
 
     func makeLaunchApprovalButton() -> NSButton {
         .rounded(title: "Open Login Items Settings…", target: self, action: #selector(openLoginItemsSettings(_:)))
+    }
+
+    func makeCheckForUpdatesButton() -> NSButton {
+        .rounded(title: "Check for Updates…", target: self, action: #selector(checkForUpdatesClicked(_:)))
     }
 }

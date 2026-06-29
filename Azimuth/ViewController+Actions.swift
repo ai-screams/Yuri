@@ -53,4 +53,8 @@ extension ViewController {
     @objc func openLoginItemsSettings(_ sender: Any?) {
         launchService.openSystemSettingsLoginItems()
     }
+
+    @objc func checkForUpdatesClicked(_ sender: Any?) {
+        checkForUpdates()
+    }
 }

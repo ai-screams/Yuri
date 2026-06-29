@@ -31,7 +31,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         onHotkeysChanged: { [weak self] in self?.reloadHotkeys() },
         registrationFailures: { [weak self] in self?.registrationFailureIdentifiers ?? [] },
         setHotkeysSuspended: { [weak self] suspended in self?.setHotkeysSuspended(suspended) },
-        setMenuBarIconHidden: { [weak self] hidden in self?.statusBarController.setVisible(!hidden) }
+        setMenuBarIconHidden: { [weak self] hidden in self?.statusBarController.setVisible(!hidden) },
+        checkForUpdates: { [weak self] in self?.updaterController.checkForUpdates(nil) }
     )
     private lazy var statusBarController = StatusBarController(
         frontmostAppTracker: frontmostAppTracker,

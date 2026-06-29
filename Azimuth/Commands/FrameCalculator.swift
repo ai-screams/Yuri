@@ -196,12 +196,17 @@ nonisolated enum FrameCalculator {
 
     // MARK: - 상대 변형 (현재 frame 기준, 방향 edge 고정)
 
+    /// 반복 상대 축소가 창을 0으로 수렴시키지 않도록 한 변의 하한(pt). 이보다 작아지지 않는다
+    /// (이미 이보다 작은 창은 그대로 둔다 — 확대는 하지 않음). 고정/최소크기 앱에서 앵커가 위치만
+    /// 밀어 생기는 드리프트도 완화한다.
+    private static let minRelativeExtent: CGFloat = 100
+
     /// 현재 창을 `fraction` 배율로 축소하되 `anchor` 모서리를 고정한다(나머지 축은 유지).
     /// 좌우 anchor는 너비를, 상하 anchor는 높이를 줄인다. fraction을 바꿔 1/2·2/3 등을 공유한다.
-    /// 효과 조합 가능: 2/3 후 1/2 = 1/3 (절대 1/3 없이도 상대적으로 도달).
+    /// 효과 조합 가능: 2/3 후 1/2 = 1/3 (절대 1/3 없이도 상대적으로 도달). 한 변은 minRelativeExtent 하한.
     private static func relativeFrame(_ anchor: RelativeAnchor, fraction: CGFloat, current: CGRect) -> CGRect {
-        let newWidth = current.width * fraction
-        let newHeight = current.height * fraction
+        let newWidth = Swift.max(current.width * fraction, Swift.min(current.width, minRelativeExtent))
+        let newHeight = Swift.max(current.height * fraction, Swift.min(current.height, minRelativeExtent))
         switch anchor {
         case .left:
             return CGRect(x: current.minX, y: current.minY, width: newWidth, height: current.height)

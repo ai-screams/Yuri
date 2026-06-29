@@ -26,9 +26,14 @@ Azimuth의 지속적 통합·배포 구성 전체 개요. 워크플로 정의는
 ### 3. `release.yml` — 릴리스 (태그 `v*` 푸시)
 러너 `macos-15`, **`environment: release`(승인 게이트)**, concurrency(진행 중 릴리스 비취소).
 
-흐름: Developer ID 인증서 임포트 → `scripts/release.sh`(빌드·서명·공증·DMG) → **DMG 자가검증**(`codesign --verify`, `spctl -a -t open`, `stapler validate`) → **SHA-256 체크섬 생성** → **Sparkle appcast 서명·생성**(EdDSA 개인키로 DMG 서명 + `appcast.xml`) → GitHub Release 생성(DMG + `.sha256` + `appcast.xml` 첨부, 노트 자동 생성).
+흐름: Developer ID 인증서 임포트 → `scripts/release.sh`(빌드·서명·공증·DMG) → **DMG 자가검증**(`codesign --verify`, `spctl -a -t open`, `stapler validate`) → **SHA-256 체크섬 생성** → **서명키 일치 게이트**(앱의 `SUPublicEDKey`가 `SPARKLE_ED_PRIVATE_KEY`와 짝인지 확인, 불일치 시 실패) → **Sparkle appcast 서명·생성**(EdDSA 개인키로 DMG 서명 + `appcast.xml`) → GitHub Release 생성(DMG + `.sha256` + `appcast.xml` 첨부, 노트 자동 생성).
 
 > 자동 업데이트: 앱은 Sparkle로 `releases/latest/download/appcast.xml`(고정 URL)을 확인해 새 버전을 설치한다. Apple 공증 + Sparkle EdDSA 서명 2중 검증. 키/설정 상세는 [`RELEASING.md`](../RELEASING.md#auto-update-sparkle).
+>
+> 설계 메모:
+> - **단일-항목 피드**: appcast는 매 릴리스 새 DMG 1건만 담는다("항상 최신 제공" 모델). 고정 URL이 항상 최신 릴리스의 appcast로 연결되므로 "내 버전보다 새 게 있나" 판정에 충분하다(델타 업데이트·다채널은 미사용). 의도된 설계.
+> - **generate_appcast 출처**: 별도 tarball 다운로드(미검증) 대신 **SPM이 `Package.resolved`에 핀해 체크섬 검증으로 받아둔 Sparkle 아티팩트**의 도구를 쓴다(서명키 옆에서 도는 코드의 공급망 위험 제거).
+> - **CFBundleVersion**: Sparkle 버전 비교용으로 `release.sh`가 **git 커밋 수(단조 증가 정수)** 를 주입한다(SemVer 문자열은 `-rc`/`-dev`서 비교가 꼬일 수 있어 회피). 표시 버전은 `MARKETING_VERSION`(태그 SemVer). 그래서 release 체크아웃은 `fetch-depth: 0`.
 
 활성화·secret·환경 설정은 [`RELEASING.md`](../RELEASING.md) 참조.
 

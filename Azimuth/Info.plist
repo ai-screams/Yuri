@@ -20,6 +20,9 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<!-- 초기 Dock 표시 여부만 결정(0 Debug=표시 / 1 Release=숨김). 실행 중 활성화 정책은
+	     AppDelegate의 configureActivationPolicy()/updateActivationPolicy()가 소유한다
+	     (창이 뜨면 .regular, 없으면 .accessory) — 이 값이 런타임 동작의 source of truth는 아님. -->
 	<key>LSUIElement</key>
 	<string>$(AZIMUTH_LSUIELEMENT)</string>
 	<key>NSHumanReadableCopyright</key>

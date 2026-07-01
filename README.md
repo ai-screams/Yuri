@@ -218,7 +218,7 @@ Azimuth is free and open source — no paywall, no ads, no telemetry — and it 
     <img src="https://img.shields.io/badge/Support%20on-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support on Ko-fi" height="40">
   </a>
   &nbsp;
-  <a href="https://github.com/sponsors/pignuante">
+  <a href="https://github.com/sponsors/ai-screams">
     <img src="https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor on GitHub" height="40">
   </a>
 </p>

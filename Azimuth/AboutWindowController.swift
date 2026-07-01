@@ -32,7 +32,7 @@ final class AboutWindowController: NSWindowController {
         Link(title: "Report an Issue", symbol: "ladybug",
              url: "https://github.com/ai-screams/Azimuth/issues/new", tint: nil),
         Link(title: "Sponsor", symbol: "heart.fill",
-             url: "https://github.com/sponsors/pignuante", tint: .systemPink),
+             url: "https://github.com/sponsors/ai-screams", tint: .systemPink),
         Link(title: "Support on Ko-fi", symbol: "cup.and.saucer.fill",
              url: "https://ko-fi.com/pignuante", tint: .systemOrange)
     ]

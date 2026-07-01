@@ -1,5 +1,5 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-06-19 | Updated: 2026-06-29 -->
+<!-- Generated: 2026-06-19 | Updated: 2026-07-01 -->
 
 # .github
 
@@ -19,6 +19,9 @@ GitHub Actions CI/CD 설정. **전체 개요·보안 레이어·활성화 설정
 | `workflows/codeql.yml` | CodeQL **Swift** SAST(push: main·주간). init→빌드→analyze → Security/Code scanning |
 | `workflows/release.yml` | 태그 `v*` → `environment: release` 승인 게이트 → 빌드·서명·공증·**DMG 자가검증**·**SHA-256 체크섬**·**EdDSA 서명키 일치 게이트**·**Sparkle appcast 서명·생성**·Release 발행 |
 | `dependabot.yml` | github-actions 주간 업데이트(SHA 핀 갱신) |
+| `FUNDING.yml` | 리포 ♡ Sponsor 버튼 소스: `github: [ai-screams]`(조직 Sponsors) + `ko_fi: pignuante`. 버튼은 리포 **Settings → Features → Sponsorships** 토글도 필요 |
+| `CODEOWNERS` | 코드 소유자(자동 리뷰어 지정) |
+| `PULL_REQUEST_TEMPLATE.md` | PR 본문 기본 템플릿 |
 
 ## For AI Agents
 

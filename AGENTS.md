@@ -1,4 +1,4 @@
-<!-- Generated: 2026-06-19 | Updated: 2026-06-29 -->
+<!-- Generated: 2026-06-19 | Updated: 2026-07-01 -->
 
 # Azimuth
 
@@ -8,8 +8,12 @@ Azimuth는 macOS 메뉴바 **윈도우 매니저**다 (Magnet/Rectangle 류). Ac
 ## Key Files
 | File | Description |
 |------|-------------|
-| `Makefile` | `build`(ad-hoc 컴파일/CI 전용) · `run`(Apple Dev 서명, 권한 테스트용) · `lint` · `format` · `test` · `secrets` · `install-hooks` |
-| `README.md` | 프로젝트 개요 |
+| `Makefile` | `build`(ad-hoc 컴파일/CI 전용) · `run`(Apple Dev 서명, 권한 테스트용) · `lint` · `format` · `test` · `coverage`(≥90% 게이트) · `secrets` · `release` · `install-hooks` |
+| `README.md` | 프로젝트 개요(설치·단축키·명령 동작·후원) |
+| `CLAUDE.md` | AI 에이전트용 최상위 오리엔테이션(빌드/규칙/규약/docs·후원/환경 함정). 상세는 디렉터리별 `AGENTS.md` |
+| `SECURITY.md` · `CONTRIBUTING.md` · `SUPPORT.md` · `CODE_OF_CONDUCT.md` | GitHub 커뮤니티 헬스 파일(보안 신고·기여 가이드·지원 안내·행동 강령) |
+| `RELEASING.md` | 릴리스 절차 문서 |
+| `LICENSE` · `NOTICE` | Apache-2.0 라이선스 + 고지 |
 | `Azimuth.xcodeproj` | Xcode 프로젝트. 비샌드박스, `DEVELOPMENT_TEAM=7K6MK3KP9K`, `SWIFT_DEFAULT_ACTOR_ISOLATION=MainActor`, deployment target macOS 26.3 |
 | `.swiftlint.yml` | SwiftLint strict 설정 |
 | `.swiftformat` | SwiftFormat 설정 (pre-commit + CI에서 `--lint`) |
@@ -21,8 +25,9 @@ Azimuth는 macOS 메뉴바 **윈도우 매니저**다 (Magnet/Rectangle 류). Ac
 |-----------|---------|
 | `Azimuth/` | 앱 소스 전체 (see `Azimuth/AGENTS.md`) |
 | `Tests/` | 명령 엔진 순수 로직 회귀 테스트 (see `Tests/AGENTS.md`) |
-| `scripts/` | build/run/lint/format/test/secret-scan 쉘 스크립트 (see `scripts/AGENTS.md`) |
-| `.github/` | GitHub Actions CI (see `.github/AGENTS.md`) |
+| `scripts/` | build/run/lint/format/test/coverage/secret-scan/release 쉘 스크립트 (see `scripts/AGENTS.md`) |
+| `docs/` | GitHub Pages 소스: 랜딩·매뉴얼(이중언어 EN/KO) (see `docs/AGENTS.md`) |
+| `.github/` | GitHub Actions CI + 거버넌스(FUNDING/CODEOWNERS/PR 템플릿) (see `.github/AGENTS.md`) |
 | `.githooks/` | `pre-commit`(SwiftFormat --lint + SwiftLint). `make install-hooks`로 설치 |
 
 ## For AI Agents

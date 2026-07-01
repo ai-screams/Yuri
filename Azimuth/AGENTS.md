@@ -1,5 +1,5 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-06-19 | Updated: 2026-06-29 -->
+<!-- Generated: 2026-06-19 | Updated: 2026-07-01 -->
 
 # Azimuth (app source)
 
@@ -14,6 +14,7 @@
 | `MainMenuBuilder.swift` | App·Edit·Window 메인 메뉴를 코드로 구성. "Check for Updates…" 항목은 Sparkle 업데이터 컨트롤러를 타깃/셀렉터로 받아 연결(MainMenuBuilder 자체는 AppKit만 import) |
 | `Info.plist` | 커스텀 Info.plist (`GENERATE_INFOPLIST_FILE=NO`). Sparkle 키(`SUFeedURL`, `SUPublicEDKey`)와 버전 변수(`MARKETING_VERSION`/`CURRENT_PROJECT_VERSION`/`AZIMUTH_LSUIELEMENT`)를 담는다. 자동 생성 plist 대신 이 파일이 번들에 복사됨 |
 | `ViewController.swift` | 설정창 내용(프로퍼티·생명주기·상태 갱신). Permissions/Shortcuts/Behavior/Updates 섹션. Updates 섹션: `versionLabel`(현재 버전 표시) + `checkForUpdatesButton`("Check for Updates…", Sparkle 클로저 호출). 레이아웃·서브뷰 팩토리는 `ViewController+Layout.swift`, `@objc` 액션은 `ViewController+Actions.swift`로 분리 |
+| `AboutWindowController.swift` | 커스텀 About 창(아이콘·이름·버전·태그라인 + Homepage/Report an Issue/Sponsor/Ko-fi 링크 버튼). 버전은 `Shared/BundleVersion`으로 번들에서 읽어 릴리스와 자동 일치 |
 | `FlippedView.swift` / `NSButton+Rounded.swift` | 공용 보조: 뒤집힌 스크롤 문서 뷰, 둥근(.rounded) 버튼 팩토리 |
 
 ## Subdirectories

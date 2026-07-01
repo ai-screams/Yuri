@@ -18,6 +18,7 @@ Sparkle 2 and ships Developer ID–signed, Apple-notarized, and EdDSA-verified.
 | `make run` | Build a **signed** app and launch it — use for anything needing Accessibility |
 | `make build` | Compile-only (ad-hoc signed; CI/compile checks) — **not** for permission testing |
 | `make test` | Pure-logic command-engine tests (swiftc, AppKit-free); prints `PASS — all N checks` |
+| `make coverage` | LLVM source-based line coverage on the pure-logic layer; gate **≥90%** (`COVERAGE_MIN`) |
 | `make lint` / `make format` | SwiftLint (strict) / SwiftFormat |
 | `make secrets` | gitleaks secret scan |
 | `make install-hooks` | pre-commit hook: SwiftFormat `--lint` + SwiftLint `--strict` |

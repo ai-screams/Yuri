@@ -26,6 +26,8 @@ enum CommandEngineTests {
         testFallbackCommands()
         testGapMaximize()
         testGapMaximizeDegenerate()
+        testDisplayGeometry()
+        testIsConstrained()
         testCommandGroups()
         testPrimitiveStrings()
         testCommandModel()
@@ -316,6 +318,84 @@ enum CommandEngineTests {
         let shortWA = CGRect(x: 0, y: 0, width: 400, height: 120)
         let shortGot = FrameCalculator.targetFrame(for: .maximizeGaps, current: shortWA, workArea: shortWA)
         expect("height-only under-floor falls back", shortGot, shortWA)
+    }
+
+    // DisplayGeometry 인접 화면 선택(순수 기하). Cocoa 좌표(원점 좌하단, Y 위로).
+    private static func testDisplayGeometry() {
+        // 현재 화면(원점). 오른쪽/왼쪽에 이웃.
+        let cur = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        let right = CGRect(x: 1920, y: 0, width: 1920, height: 1080)
+        let left = CGRect(x: -1920, y: 0, width: 1920, height: 1080)
+        let win = CGRect(x: 800, y: 400, width: 300, height: 200)
+
+        expectName("right picks the right neighbor",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [left, right], window: win, edge: .right) ?? -1)", "1")
+        expectName("left picks the left neighbor",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [left, right], window: win, edge: .left) ?? -1)", "0")
+        // 그 방향에 이웃이 없으면 nil.
+        expectName("no neighbor upward -> nil",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [left, right], window: win, edge: .top) == nil)", "true")
+        // 세로 겹침 없는 후보는 방향이 맞아도 제외(오른쪽이지만 Y로 안 겹침).
+        let rightButBelow = CGRect(x: 1920, y: -2000, width: 1920, height: 1080)
+        expectName("direction match but no vertical overlap -> excluded",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [rightButBelow], window: win, edge: .right) == nil)", "true")
+        // 세로 스택 타이브레이크: 왼쪽에 위/아래 두 화면 → 창의 수직 중심(midY)에 가까운 쪽 선택.
+        // 창을 위쪽(midY=900)에 두면 위 화면(y 500..1580, 겹침) 선택; 아래 화면은 perpendicularGap 큼.
+        let leftTop = CGRect(x: -1200, y: 500, width: 1200, height: 1080)
+        let leftBottom = CGRect(x: -1200, y: -900, width: 1200, height: 1080)
+        let winHigh = CGRect(x: 100, y: 850, width: 300, height: 200) // midY=950
+        expectName("vertical-stack left picks the overlapping/closer screen (top=idx0)",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [leftTop, leftBottom], window: winHigh, edge: .left) ?? -1)", "0")
+        let winLow = CGRect(x: 100, y: -800, width: 300, height: 200) // midY=-700
+        expectName("vertical-stack left picks the lower screen for a low window (bottom=idx1)",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [leftTop, leftBottom], window: winLow, edge: .left) ?? -1)", "1")
+        // 빈 후보 → nil.
+        expectName("empty candidates -> nil",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [], window: win, edge: .right) == nil)", "true")
+
+        // 수직 방향(top/bottom): 위/아래 이웃(horizontalOverlap·primaryGap top/bottom 경로 커버).
+        let above = CGRect(x: 0, y: 1080, width: 1920, height: 1080)
+        let below = CGRect(x: 0, y: -1080, width: 1920, height: 1080)
+        expectName("top picks the above screen (idx0)",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [above, below], window: win, edge: .top) ?? -1)", "0")
+        expectName("bottom picks the below screen (idx1)",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [above, below], window: win, edge: .bottom) ?? -1)", "1")
+        // 위쪽이지만 가로로 안 겹침 → 제외.
+        let aboveButRight = CGRect(x: 3000, y: 1080, width: 1920, height: 1080)
+        expectName("top match but no horizontal overlap -> excluded",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [aboveButRight], window: win, edge: .top) == nil)", "true")
+        // 가로 스택 타이브레이크(top): 위쪽에 좌/우 두 화면 → 창 midX에 가까운 쪽.
+        let aboveLeft = CGRect(x: -600, y: 1080, width: 1200, height: 1080)   // x [-600,600]
+        let aboveRight = CGRect(x: 1400, y: 1080, width: 1200, height: 1080)  // x [1400,2600]
+        let winLeft = CGRect(x: 100, y: 400, width: 200, height: 200)         // midX=200
+        expectName("horizontal-stack top picks x-closer screen (left=idx0)",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [aboveLeft, aboveRight], window: winLeft, edge: .top) ?? -1)", "0")
+        // perpendicularGap 동률(둘 다 창 midY를 덮음) → primaryGap(이동방향 거리)로 타이브레이크.
+        // 더 먼 화면을 먼저 넣어, 뒤에 오는 가까운 화면이 tiedPerpendicular true 분기로 이기게 한다.
+        let rightFar = CGRect(x: 4000, y: 0, width: 1920, height: 1080)   // primaryGap 큼
+        let rightNear = CGRect(x: 1920, y: 0, width: 1920, height: 1080)  // primaryGap 작음
+        expectName("right tie broken by primary distance (nearer=idx1)",
+                   "\(DisplayGeometry.selectAdjacentIndex(current: cur, candidates: [rightFar, rightNear], window: win, edge: .right) ?? -1)", "1")
+    }
+
+    // WindowFrameWriter가 anchored 보정을 걸지 판정하는 순수 임계 함수(경계값).
+    private static func testIsConstrained() {
+        let target = CGSize(width: 1000, height: 800)
+        // 목표와 같음 → 제약 아님.
+        expectName("equal size not constrained",
+                   "\(FrameCalculator.isConstrained(actualSize: target, target: target, tolerance: 8))", "false")
+        // tolerance 정확히 = 경계(초과 아님) → 제약 아님(> 비교).
+        expectName("exactly at tolerance not constrained",
+                   "\(FrameCalculator.isConstrained(actualSize: CGSize(width: 1008, height: 800), target: target, tolerance: 8))", "false")
+        // tolerance 직후(1008.1) → 제약.
+        expectName("just over tolerance is constrained (width)",
+                   "\(FrameCalculator.isConstrained(actualSize: CGSize(width: 1008.1, height: 800), target: target, tolerance: 8))", "true")
+        // 높이 축 단독 초과 → 제약.
+        expectName("height-only over tolerance is constrained",
+                   "\(FrameCalculator.isConstrained(actualSize: CGSize(width: 1000, height: 809), target: target, tolerance: 8))", "true")
+        // 목표보다 작음 → 제약 아님(축소는 anchored 보정 대상 아님).
+        expectName("smaller than target not constrained",
+                   "\(FrameCalculator.isConstrained(actualSize: CGSize(width: 500, height: 400), target: target, tolerance: 8))", "false")
     }
 
     // CommandGroup 표시명·토큰과 command→group 매핑 전수.

@@ -18,89 +18,17 @@ enum DisplayResolver {
     /// @MainActor: 열거형 전체가 @MainActor이므로 이 메서드도 메인 액터에서만 호출 가능 (`NSScreen.screens` 접근).
     static func adjacentWorkArea(forAXWindowFrame axFrame: CGRect, edge: SnapEdge) -> CGRect? {
         let cocoaWindow = CoordinateSpace.axToCocoa(axFrame)
-        guard let current = NSScreen.bestMatch(forCocoaRect: cocoaWindow),
-              let neighbor = adjacentScreen(to: current, edge: edge, window: cocoaWindow)
-        else {
-            return nil
-        }
+        guard let current = NSScreen.bestMatch(forCocoaRect: cocoaWindow) else { return nil }
+        // 현재 화면을 제외한 후보들의 frame을 순수 기하(DisplayGeometry)에 넘겨 인덱스를 고른다.
+        // NSScreen 매핑만 여기서 하고, 선택 규칙(방향·겹침·거리·타이브레이크)은 테스트 가능한 순수 계층에.
+        let others = NSScreen.screens.filter { $0 != current }
+        guard let pick = DisplayGeometry.selectAdjacentIndex(
+            current: current.frame,
+            candidates: others.map(\.frame),
+            window: cocoaWindow,
+            edge: edge
+        ) else { return nil }
         // 0크기 가드 포함(디스플레이 재구성 순간) — WorkAreaResolver와 공용 헬퍼.
-        return CoordinateSpace.axWorkArea(of: neighbor)
-    }
-
-    /// 방향에 맞고 현재 화면과 겹치는 후보 중, 창 위치에 수직/수평으로 가장 가까운 화면.
-    /// 동률이면 주축(이동 방향) 중심 거리가 가까운 쪽으로 결정.
-    private static func adjacentScreen(to current: NSScreen, edge: SnapEdge, window: CGRect) -> NSScreen? {
-        let origin = current.frame
-        var best: NSScreen?
-        var bestPerpendicular = CGFloat.greatestFiniteMagnitude
-        var bestPrimary = CGFloat.greatestFiniteMagnitude
-        for screen in NSScreen.screens where screen != current {
-            let candidate = screen.frame
-            guard isInDirection(origin: origin, candidate: candidate, edge: edge) else { continue }
-            let perpendicular = perpendicularGap(window: window, candidate: candidate, edge: edge)
-            let primary = primaryGap(origin: origin, candidate: candidate, edge: edge)
-            let closerPerpendicular = perpendicular < bestPerpendicular - 0.5
-            let tiedPerpendicular = abs(perpendicular - bestPerpendicular) <= 0.5 && primary < bestPrimary
-            if closerPerpendicular || tiedPerpendicular {
-                bestPerpendicular = perpendicular
-                bestPrimary = primary
-                best = screen
-            }
-        }
-        return best
-    }
-
-    /// Cocoa 좌표(원점 좌하단, Y 위로)에서 `edge` 방향에 있고 수직/수평으로 겹치는가.
-    /// 물리적으로 인접한 화면만이 아니라 그 방향에 있는 모든 화면이 후보가 된다.
-    /// 최종 선택은 `perpendicularGap`·`primaryGap` 거리 기준으로 이루어진다(가장 가까운 화면이 이긴다).
-    private static func isInDirection(origin: CGRect, candidate: CGRect, edge: SnapEdge) -> Bool {
-        switch edge {
-        case .left:
-            return candidate.midX < origin.midX && verticalOverlap(origin, candidate)
-        case .right:
-            return candidate.midX > origin.midX && verticalOverlap(origin, candidate)
-        case .top:
-            return candidate.midY > origin.midY && horizontalOverlap(origin, candidate)
-        case .bottom:
-            return candidate.midY < origin.midY && horizontalOverlap(origin, candidate)
-        }
-    }
-
-    /// 창의 수직(좌우 이동)·수평(상하 이동) 중심이 후보 화면 범위에서 벗어난 거리(범위 안이면 0).
-    private static func perpendicularGap(window: CGRect, candidate: CGRect, edge: SnapEdge) -> CGFloat {
-        switch edge {
-        case .left, .right:
-            return distance(window.midY, lower: candidate.minY, upper: candidate.maxY)
-        case .top, .bottom:
-            return distance(window.midX, lower: candidate.minX, upper: candidate.maxX)
-        }
-    }
-
-    /// 이동 방향(주축) 중심 거리. 동률 타이브레이크에 쓴다.
-    private static func primaryGap(origin: CGRect, candidate: CGRect, edge: SnapEdge) -> CGFloat {
-        switch edge {
-        case .left:
-            return origin.midX - candidate.midX
-        case .right:
-            return candidate.midX - origin.midX
-        case .top:
-            return candidate.midY - origin.midY
-        case .bottom:
-            return origin.midY - candidate.midY
-        }
-    }
-
-    private static func distance(_ value: CGFloat, lower: CGFloat, upper: CGFloat) -> CGFloat {
-        if value < lower { return lower - value }
-        if value > upper { return value - upper }
-        return 0
-    }
-
-    private static func verticalOverlap(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
-        lhs.minY < rhs.maxY && rhs.minY < lhs.maxY
-    }
-
-    private static func horizontalOverlap(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
-        lhs.minX < rhs.maxX && rhs.minX < lhs.maxX
+        return CoordinateSpace.axWorkArea(of: others[pick])
     }
 }

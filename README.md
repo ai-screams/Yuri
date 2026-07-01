@@ -199,11 +199,11 @@ GitHub Actions runs the same lint checks and a macOS `xcodebuild` build on pushe
 
 ## Support
 
-Azimuth is free and open source — no paywall, no ads, no telemetry. If it earns a place in your workflow, you can support its development:
+Azimuth is free and open source — no paywall, no ads, no telemetry — and it always will be. If it earns a place in your workflow, you can chip in to fund its development:
 
 <p>
-  <a href="https://buymeacoffee.com/pignuante">
-    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="40">
+  <a href="https://ko-fi.com/pignuante">
+    <img src="https://img.shields.io/badge/Support%20on-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support on Ko-fi" height="40">
   </a>
   &nbsp;
   <a href="https://github.com/sponsors/pignuante">
@@ -211,9 +211,9 @@ Azimuth is free and open source — no paywall, no ads, no telemetry. If it earn
   </a>
 </p>
 
-- ☕ **Buy Me a Coffee** — one-time tip · ♥ **GitHub Sponsors** — recurring support
+- 💛 **Ko-fi** — a one-time tip or a **supporter license** · ♥ **GitHub Sponsors** — recurring support
 
-Entirely optional, always appreciated — there is no paywall and never will be.
+A supporter license is simply a way to say thanks — it unlocks nothing, because every feature is already free for everyone. Entirely optional, always appreciated: there is no paywall and never will be.
 
 ## License
 

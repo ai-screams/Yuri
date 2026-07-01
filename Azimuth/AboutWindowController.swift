@@ -33,8 +33,8 @@ final class AboutWindowController: NSWindowController {
              url: "https://github.com/ai-screams/Azimuth/issues/new", tint: nil),
         Link(title: "Sponsor", symbol: "heart.fill",
              url: "https://github.com/sponsors/pignuante", tint: .systemPink),
-        Link(title: "Buy Me a Coffee", symbol: "cup.and.saucer.fill",
-             url: "https://buymeacoffee.com/pignuante", tint: .systemOrange)
+        Link(title: "Support on Ko-fi", symbol: "cup.and.saucer.fill",
+             url: "https://ko-fi.com/pignuante", tint: .systemOrange)
     ]
 
     private static let contentWidth: CGFloat = 460

@@ -116,6 +116,12 @@ nonisolated enum FrameCalculator {
         Swift.max(8, extent * 0.01)
     }
 
+    /// 앱이 목표보다 "제약적으로 큰"(어느 한 축이라도 tolerance 초과) 상태인가 — anchored origin
+    /// 보정을 걸지 판정한다. 순수 함수라 경계값(tolerance 직전/직후)을 테스트할 수 있다.
+    static func isConstrained(actualSize: CGSize, target: CGSize, tolerance: CGFloat) -> Bool {
+        actualSize.width > target.width + tolerance || actualSize.height > target.height + tolerance
+    }
+
     /// 제약 앱이 목표 크기에 못 미칠 때, target이 닿아 있던 작업영역 모서리를 실제 크기에 맞춰 유지하는 origin.
     /// 위치를 두 번 쓰지 않고(KI-003 깜빡임 회피) 처음부터 이 anchored origin으로 단 한 번 쓰기 위해 사용.
     /// touching 모서리는 target·workArea에서 내부 도출한다(호출자가 넘기지 않음).

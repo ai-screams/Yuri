@@ -84,7 +84,7 @@ enum WindowFrameWriter {
     ) -> CGPoint {
         guard let workArea,
               let achieved = AXAttribute.size(element, kAXSizeAttribute as String),
-              achieved.width > target.width + sizeTolerance || achieved.height > target.height + sizeTolerance
+              FrameCalculator.isConstrained(actualSize: achieved, target: target.size, tolerance: sizeTolerance)
         else { return target.origin }
         return FrameCalculator.anchorOrigin(actualSize: achieved, requested: target, workArea: workArea)
     }

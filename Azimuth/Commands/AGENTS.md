@@ -1,5 +1,5 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-06-19 | Updated: 2026-06-29 -->
+<!-- Generated: 2026-06-19 | Updated: 2026-07-01 -->
 
 # Commands
 
@@ -10,19 +10,20 @@
 | File | Description |
 |------|-------------|
 | `CommandPrimitives.swift` | `nonisolated` 빌딩블록 값 타입: `Axis`/`Fraction`/`Slot`/`AbsolutePlacement`/`MoveDirection`/`RelativeAnchor`/`SnapEdge`(표시명·안정 토큰). `WindowCommand.swift`에서 분리(파일 비대화 방지) |
-| `WindowCommand.swift` | `nonisolated` 명령 모델: `WindowCommand`(maximize/absolute/snapThrow/moveToDisplay/move/relativeHalf/relativeTwoThird/undo) + `CommandGroup`(core/halves/thirds/twoThirds/move/relative/display) + 식별자 역조회 + `menuCommands` 목록(33개) |
-| `FrameCalculator.swift` | `nonisolated` 순수 기하. AX 좌표 입력(current, workArea)으로 목표 frame 계산. 절대 배치(축 독립), 이동(현재 크기 유지·작업영역 클램프), 상대 반분/2/3(현재 frame 기준 edge 고정), snapThrow/moveToDisplay 지원(`halfRect`·`isSnapped`·`displayMoveRect`) |
+| `WindowCommand.swift` | `nonisolated` 명령 모델: `WindowCommand`(maximize/absolute/snapThrow/moveToDisplay/move/relativeHalf/relativeTwoThird/undo) + `CommandGroup`(core/halves/thirds/twoThirds/move/relative/display) + 식별자 역조회 + `menuCommands` 목록(34개) |
+| `FrameCalculator.swift` | `nonisolated` 순수 기하. AX 좌표 입력(current, workArea)으로 목표 frame 계산. 절대 배치(축 독립), 이동(현재 크기 유지·작업영역 클램프), 상대 반분/2/3(현재 frame 기준 edge 고정), snapThrow/moveToDisplay 지원(`halfRect`·`isSnapped`·`displayMoveRect`), 여백 최대화(`gappedWorkArea`), 고정폭 앱 판정(`isConstrained`) |
+| `DisplayGeometry.swift` | `nonisolated` 순수 기하. 인접 디스플레이 선택(`selectAdjacentIndex(current:candidates:window:edge:)`): 방향 판정·수직/주축 간격·거리·겹침으로 후보 중 최적 화면 인덱스 산출. AX 계층(`WindowAccess/DisplayResolver`)에서 분리해 테스트 가능하게 함 |
 | `WindowCommandExecutor.swift` | `@MainActor` 오케스트레이션. 창 해석 → (undo면 복원, 아니면 직전 frame 기록) → 작업영역 해석 → 목표 계산 → AX 쓰기. `Result<CGRect, WindowCommandError>` 반환 |
 
 ## For AI Agents
 
 ### Working In This Directory
-- `CommandPrimitives.swift`·`WindowCommand.swift`·`FrameCalculator.swift`는 **AppKit/AX import 금지**(순수 로직 유지). 이 셋은 `scripts/test.sh`가 직접 컴파일하므로 import를 추가하면 테스트 빌드가 깨진다(CoreGraphics는 허용).
+- `CommandPrimitives.swift`·`WindowCommand.swift`·`FrameCalculator.swift`·`DisplayGeometry.swift`는 **AppKit/AX import 금지**(순수 로직 유지). 이들은 `scripts/test.sh`·`scripts/coverage.sh`가 직접 컴파일하므로 import를 추가하면 테스트/커버리지 빌드가 깨진다(CoreGraphics는 허용).
 - 새 명령 추가 시: `WindowCommand`에 케이스 + `displayName`, `FrameCalculator.targetFrame`에 분기, 필요하면 `menuCommands`와 `Hotkeys/HotkeyPreset` 바인딩에도 추가.
 - 모든 frame은 **AX 좌표(좌상단 원점)** 기준. Cocoa 변환은 호출부(`WorkAreaResolver`)에서 처리됨.
 
 ### Testing Requirements
-- `make test`(`Tests/CommandEngineTests.swift`)가 절대 배치/축 합성/이동/상대 반분/상대 2/3/snapThrow·displayMove/명령 모델(33개)을 검증. 기하 변경 시 케이스 추가.
+- `make test`(`Tests/CommandEngineTests.swift`)가 절대 배치/축 합성/이동/상대 반분/상대 2/3/snapThrow·displayMove/여백 최대화·고정폭 판정/인접 디스플레이 선택/명령 모델(34개)을 검증. 기하 변경 시 케이스 추가. 순수 로직 라인 커버리지는 `make coverage`(≥90%)로 게이트.
 
 ### Common Patterns
 - 이동 클램프: 창이 작업영역보다 크면(`upper < lower`) 좌상단(`lower`)에 고정.

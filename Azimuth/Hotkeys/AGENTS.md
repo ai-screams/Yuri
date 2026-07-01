@@ -1,10 +1,10 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-06-19 | Updated: 2026-06-29 -->
+<!-- Generated: 2026-06-19 | Updated: 2026-07-01 -->
 
 # Hotkeys
 
 ## Purpose
-전역 단축키. Carbon `RegisterEventHotKey`로 시스템 전역 핫키를 등록하고, 프리셋(Standard/Vim)으로 33개 명령 전체에 키 조합을 매핑한다. 커스텀 단축키 override와 그룹/명령 단위 비활성화를 지원한다.
+전역 단축키. Carbon `RegisterEventHotKey`로 시스템 전역 핫키를 등록하고, 프리셋(Standard/Vim)으로 34개 명령 전체에 키 조합을 매핑한다. 커스텀 단축키 override와 그룹/명령 단위 비활성화를 지원한다.
 
 ## Key Files
 | File | Description |
